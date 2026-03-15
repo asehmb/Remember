@@ -1,0 +1,7 @@
+{
+  "name": "tagmind",
+  "version": "1.0.0",
+  "description": "Search and retrieve files from your TagLine library by tag, topic, colour, or keyword.",
+  "author": "TagLine",
+  "tools": ["search_files", "get_file_detail", "list_tags", "get_recent_files"]
+}

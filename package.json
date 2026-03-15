@@ -1,0 +1,76 @@
+{
+  "name": "tagline",
+  "productName": "TagLine",
+  "version": "0.1.0",
+  "description": "AI-powered local file tagging and search desktop app",
+  "main": "dist-electron/index.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:main\" \"npm:dev:electron\"",
+    "postinstall": "electron-builder install-app-deps",
+    "dev:renderer": "vite",
+    "dev:main": "tsup src/main/index.ts src/main/preload.ts --format=cjs --platform=node --external electron --out-dir dist-electron --watch --sourcemap --clean false",
+    "dev:electron": "wait-on tcp:5173 dist-electron/index.js && cross-env NODE_ENV=development VITE_DEV_SERVER_URL=http://localhost:5173 electronmon dist-electron/index.js",
+    "build": "npm run build:renderer && npm run build:main",
+    "build:renderer": "vite build",
+    "build:main": "tsup src/main/index.ts src/main/preload.ts --format=cjs --platform=node --external electron --out-dir dist-electron --sourcemap --clean",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.main.json --noEmit",
+    "package:mac": "npm run build && electron-builder --mac",
+    "start": "electron dist-electron/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "clsx": "^2.1.1",
+    "electron-store": "^10.0.1",
+    "express": "^5.2.1",
+    "mammoth": "^1.9.1",
+    "openai": "^4.87.3",
+    "p-queue": "^8.1.0",
+    "pdf-parse": "^1.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.24.2",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.13.10",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^35.7.5",
+    "electron-builder": "^25.1.8",
+    "electronmon": "^2.0.3",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.1",
+    "wait-on": "^8.0.2"
+  },
+  "build": {
+    "appId": "com.tagline.desktop",
+    "productName": "TagLine",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    }
+  }
+}
