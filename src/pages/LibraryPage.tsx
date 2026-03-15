@@ -18,6 +18,7 @@ interface LibraryPageProps {
   loading: boolean;
   error: string | null;
   query: string;
+  hasQueuedFiles: boolean;
   viewMode: LibraryViewMode;
   onSetViewMode: (mode: LibraryViewMode) => void;
   onSelectTag: (tag: string | null) => void;
@@ -25,6 +26,7 @@ interface LibraryPageProps {
   onDropPaths: (paths: string[]) => Promise<void>;
   onOpenFile: (fileId: string) => void;
   onRetry: (fileId: string) => void;
+  onRetryAllFailed: () => void;
   onAnalyze: (fileId: string) => void;
 }
 
@@ -35,6 +37,7 @@ export function LibraryPage({
   loading,
   error,
   query,
+  hasQueuedFiles,
   viewMode,
   onSetViewMode,
   onSelectTag,
@@ -42,6 +45,7 @@ export function LibraryPage({
   onDropPaths,
   onOpenFile,
   onRetry,
+  onRetryAllFailed,
   onAnalyze
 }: LibraryPageProps): JSX.Element {
   const [showAllTags, setShowAllTags] = useState(false);
@@ -92,21 +96,57 @@ export function LibraryPage({
 
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Library</h2>
-        <div className="rounded-lg border border-slate-200 p-1 dark:border-slate-700">
+        <div className="flex items-center gap-2">
           <button
-            className={`rounded px-3 py-1 text-xs ${viewMode === "grid" ? "bg-accent-500 text-white" : "text-slate-600 dark:text-slate-300"}`}
-            onClick={() => onSetViewMode("grid")}
+            className="rounded-md border border-rose-300 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
+            onClick={onRetryAllFailed}
             type="button"
           >
-            Grid
+            <span className="inline-flex items-center gap-1.5">
+              {hasQueuedFiles ? (
+                <svg
+                  aria-hidden="true"
+                  className="h-3 w-3 animate-spin"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    fill="none"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  />
+                  <path
+                    className="opacity-90"
+                    d="M22 12a10 10 0 0 0-10-10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="3"
+                  />
+                </svg>
+              ) : null}
+              <span>Retry all failed scans</span>
+            </span>
           </button>
-          <button
-            className={`rounded px-3 py-1 text-xs ${viewMode === "list" ? "bg-accent-500 text-white" : "text-slate-600 dark:text-slate-300"}`}
-            onClick={() => onSetViewMode("list")}
-            type="button"
-          >
-            List
-          </button>
+          <div className="rounded-lg border border-slate-200 p-1 dark:border-slate-700">
+            <button
+              className={`rounded px-3 py-1 text-xs ${viewMode === "grid" ? "bg-accent-500 text-white" : "text-slate-600 dark:text-slate-300"}`}
+              onClick={() => onSetViewMode("grid")}
+              type="button"
+            >
+              Grid
+            </button>
+            <button
+              className={`rounded px-3 py-1 text-xs ${viewMode === "list" ? "bg-accent-500 text-white" : "text-slate-600 dark:text-slate-300"}`}
+              onClick={() => onSetViewMode("list")}
+              type="button"
+            >
+              List
+            </button>
+          </div>
         </div>
       </div>
 

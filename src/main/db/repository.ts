@@ -6,6 +6,7 @@ import type {
   FileAnalysis,
   FileProcessStatus,
   FileRow,
+  LibraryStatusCounts,
   LibraryFilters,
   SearchResult,
   TagCloudItem
@@ -241,6 +242,33 @@ export class RememberRepository {
   getFileCount(): number {
     const row = this.db.prepare("SELECT COUNT(*) AS count FROM files").get() as { count: number };
     return row.count;
+  }
+
+  getFileStatusCounts(): LibraryStatusCounts {
+    const rows = this.db
+      .prepare("SELECT status, COUNT(*) AS count FROM files GROUP BY status")
+      .all() as Array<{ status: FileProcessStatus; count: number }>;
+
+    const counts: LibraryStatusCounts = {
+      queued: 0,
+      pending: 0,
+      processing: 0,
+      done: 0,
+      error: 0
+    };
+
+    for (const row of rows) {
+      counts[row.status] = row.count;
+    }
+
+    return counts;
+  }
+
+  listFileIdsByStatus(status: FileProcessStatus): string[] {
+    const rows = this.db
+      .prepare("SELECT id FROM files WHERE status = ? ORDER BY uploaded_at ASC")
+      .all(status) as Array<{ id: string }>;
+    return rows.map((row) => row.id);
   }
 
   searchSnapshot(rawQuery: string, limit = 25): RestSearchSnapshot {

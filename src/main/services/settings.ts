@@ -7,6 +7,7 @@ import type { AiProfile, AppSettings } from "../../shared/types";
 
 interface PreferenceSchema {
   autoAnalyzeOnUpload: boolean;
+  aiRequestDelayMs: number;
   restApiEnabled: boolean;
   restApiPort: number;
   watchFolderPaths: string[];
@@ -48,6 +49,7 @@ const OPENAI_PRESET = getAiProviderPreset("openai");
 
 const DEFAULT_PREFERENCES: PreferenceSchema = {
   autoAnalyzeOnUpload: true,
+  aiRequestDelayMs: 2000,
   restApiEnabled: true,
   restApiPort: 47821,
   watchFolderPaths: [],
@@ -75,6 +77,7 @@ export class SettingsService {
     const preferences = this.readPreferences();
     return {
       autoAnalyzeOnUpload: preferences.autoAnalyzeOnUpload,
+      aiRequestDelayMs: preferences.aiRequestDelayMs,
       restApiEnabled: preferences.restApiEnabled,
       restApiPort: preferences.restApiPort,
       watchFolderPaths: [...preferences.watchFolderPaths],
@@ -217,6 +220,18 @@ export class SettingsService {
     this.writePreferences(nextPreferences);
   }
 
+  setAiRequestDelayMs(delayMs: number): void {
+    const nextPreferences = {
+      ...this.readPreferences(),
+      aiRequestDelayMs: this.validateAiRequestDelayMs(delayMs)
+    };
+    this.writePreferences(nextPreferences);
+  }
+
+  getAiRequestDelayMs(): number {
+    return this.readPreferences().aiRequestDelayMs;
+  }
+
   getAutoAnalyzeOnUpload(): boolean {
     return this.readPreferences().autoAnalyzeOnUpload;
   }
@@ -352,6 +367,10 @@ export class SettingsService {
         parsed.autoAnalyzeOnUpload === undefined
           ? DEFAULT_PREFERENCES.autoAnalyzeOnUpload
           : this.validateAutoAnalyzeOnUpload(parsed.autoAnalyzeOnUpload);
+      const aiRequestDelayMs =
+        parsed.aiRequestDelayMs === undefined
+          ? DEFAULT_PREFERENCES.aiRequestDelayMs
+          : this.validateAiRequestDelayMs(parsed.aiRequestDelayMs);
       const restApiEnabled =
         parsed.restApiEnabled === undefined
           ? DEFAULT_PREFERENCES.restApiEnabled
@@ -413,6 +432,7 @@ export class SettingsService {
 
       return {
         autoAnalyzeOnUpload,
+        aiRequestDelayMs,
         restApiEnabled,
         restApiPort,
         watchFolderPaths,
@@ -472,6 +492,15 @@ export class SettingsService {
   private validateAutoAnalyzeOnUpload(value: unknown): boolean {
     if (typeof value !== "boolean") {
       throw new Error("Stored preferences are invalid: autoAnalyzeOnUpload must be a boolean");
+    }
+    return value;
+  }
+
+  private validateAiRequestDelayMs(value: unknown): number {
+    if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 120000) {
+      throw new Error(
+        "Stored preferences are invalid: aiRequestDelayMs must be an integer in 0-120000"
+      );
     }
     return value;
   }

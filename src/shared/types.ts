@@ -4,6 +4,7 @@ export const SUPPORTED_EXTENSIONS = [
   ".pdf",
   ".txt",
   ".docx",
+  ".pptx",
   ".png",
   ".jpg",
   ".jpeg",
@@ -64,6 +65,14 @@ export interface SearchResult {
   matchedTags: string[];
 }
 
+export interface LibraryStatusCounts {
+  queued: number;
+  pending: number;
+  processing: number;
+  done: number;
+  error: number;
+}
+
 export interface TagCloudItem {
   tag: string;
   count: number;
@@ -71,6 +80,7 @@ export interface TagCloudItem {
 
 export interface AppSettings {
   autoAnalyzeOnUpload: boolean;
+  aiRequestDelayMs: number;
   restApiEnabled: boolean;
   restApiPort: number;
   watchFolderPaths: string[];
@@ -104,14 +114,18 @@ export interface RememberAPI {
   pickFolderPath: () => Promise<string | null>;
   ingestFilePaths: (paths: string[]) => Promise<UploadResult>;
   listFiles: (filters: LibraryFilters) => Promise<SearchResult[]>;
+  getLibraryStatusCounts: () => Promise<LibraryStatusCounts>;
   getFile: (fileId: string) => Promise<FileRow | null>;
+  getFilePreviewText: (fileId: string) => Promise<string | null>;
   getTagCloud: () => Promise<TagCloudItem[]>;
   addManualTag: (fileId: string, tag: string) => Promise<void>;
   deleteTag: (fileId: string, tag: string) => Promise<void>;
   retryAnalysis: (fileId: string) => Promise<void>;
+  retryAllFailedAnalysis: () => Promise<number>;
   triggerAnalysis: (fileId: string) => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   setAutoAnalyzeOnUpload: (enabled: boolean) => Promise<void>;
+  setAiRequestDelayMs: (delayMs: number) => Promise<void>;
   setRestApiEnabled: (enabled: boolean) => Promise<void>;
   setWatchFolderPaths: (watchFolderPaths: string[]) => Promise<void>;
   setAiProvider: (provider: AiProviderId) => Promise<void>;

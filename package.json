@@ -20,6 +20,7 @@
     "start": "electron dist-electron/index.js"
   },
   "dependencies": {
+    "@types/yauzl": "^2.10.3",
     "better-sqlite3": "^11.8.1",
     "clsx": "^2.1.1",
     "electron-store": "^10.0.1",
@@ -30,6 +31,7 @@
     "pdf-parse": "^1.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "yauzl": "^3.2.1",
     "zod": "^3.24.2",
     "zustand": "^5.0.3"
   },

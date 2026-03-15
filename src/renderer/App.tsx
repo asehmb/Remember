@@ -5,9 +5,17 @@ import { useLibraryData } from "../hooks/useLibraryData";
 import { useTagCloud } from "../hooks/useTagCloud";
 import { LibraryPage } from "../pages/LibraryPage";
 import { SettingsPage } from "../pages/SettingsPage";
-import type { AppSettings, FileRow } from "../shared/types";
+import type { AppSettings, FileRow, LibraryStatusCounts } from "../shared/types";
 import { useUIStore } from "../store/uiStore";
 import type { JSX } from "react";
+
+const EMPTY_STATUS_COUNTS: LibraryStatusCounts = {
+  queued: 0,
+  pending: 0,
+  processing: 0,
+  done: 0,
+  error: 0
+};
 
 export function App(): JSX.Element {
   const {
@@ -25,6 +33,9 @@ export function App(): JSX.Element {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileRow | null>(null);
+  const [libraryStatusCounts, setLibraryStatusCounts] = useState<LibraryStatusCounts>(
+    EMPTY_STATUS_COUNTS
+  );
 
   const refreshSettings = async (): Promise<void> => {
     const next = await window.remember.getSettings();
@@ -32,11 +43,30 @@ export function App(): JSX.Element {
   };
 
   const refreshAll = async (): Promise<void> => {
-    await Promise.all([refresh(), refreshTagCloud(), refreshSettings()]);
+    await Promise.all([
+      refresh(),
+      refreshTagCloud(),
+      refreshSettings(),
+      window.remember.getLibraryStatusCounts().then(setLibraryStatusCounts)
+    ]);
   };
 
   useEffect(() => {
     void refreshSettings();
+  }, []);
+
+  useEffect(() => {
+    const run = async (): Promise<void> => {
+      const counts = await window.remember.getLibraryStatusCounts();
+      setLibraryStatusCounts(counts);
+    };
+
+    void run();
+    const interval = window.setInterval(() => {
+      void run();
+    }, 1500);
+
+    return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -100,12 +130,19 @@ export function App(): JSX.Element {
         onRetry={(fileId) => {
           void window.remember.retryAnalysis(fileId).then(refreshAll);
         }}
+        onRetryAllFailed={() => {
+          void window.remember.retryAllFailedAnalysis().then((count) => {
+            setToast(count > 0 ? `Queued ${count} failed scan${count === 1 ? "" : "s"}.` : "No failed scans to retry.");
+            void refreshAll();
+          });
+        }}
         onSelectTag={(tag) => setFilter("selectedTag", tag)}
         onSetViewMode={setViewMode}
         query={filters.query}
         results={results}
         selectedTag={filters.selectedTag}
         tagCloud={tagCloud}
+        hasQueuedFiles={libraryStatusCounts.queued > 0}
         viewMode={viewMode}
       />
     );
@@ -119,6 +156,7 @@ export function App(): JSX.Element {
     setSelectedFileId,
     setViewMode,
     tagCloud,
+    libraryStatusCounts.queued,
     viewMode
   ]);
 
@@ -126,7 +164,7 @@ export function App(): JSX.Element {
     <div className="no-drag flex h-full overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <main className="flex min-w-0 flex-1 flex-col">
         <header className="no-drag border-b border-slate-200 bg-white/70 px-6 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
-          <div className="h-2" />
+          <div className="h-5" />
           <div className="no-drag flex items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <h1 className="shrink-0 text-lg font-semibold tracking-tight">Remember</h1>
@@ -191,6 +229,10 @@ export function App(): JSX.Element {
               }}
               onToggleAutoAnalyze={async (enabled) => {
                 await window.remember.setAutoAnalyzeOnUpload(enabled);
+                await refreshSettings();
+              }}
+              onSetAiRequestDelay={async (delayMs) => {
+                await window.remember.setAiRequestDelayMs(delayMs);
                 await refreshSettings();
               }}
               onToggleRestApi={async (enabled) => {

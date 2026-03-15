@@ -2,7 +2,7 @@ import path from "node:path";
 import { SUPPORTED_EXTENSIONS } from "../../shared/types";
 
 const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
-const DOCUMENT_EXTENSIONS = new Set([".pdf", ".txt", ".docx"]);
+const DOCUMENT_EXTENSIONS = new Set([".pdf", ".txt", ".docx", ".pptx"]);
 
 export function normalizeExtension(filePath: string): string {
   return path.extname(filePath).toLowerCase();
@@ -28,6 +28,9 @@ export function guessMimeType(extension: string): string {
   if (normalized === ".pdf") return "application/pdf";
   if (normalized === ".docx") {
     return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  }
+  if (normalized === ".pptx") {
+    return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
   }
   if (normalized === ".txt") return "text/plain";
   return "application/octet-stream";

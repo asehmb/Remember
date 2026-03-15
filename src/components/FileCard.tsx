@@ -1,6 +1,8 @@
 import clsx from "clsx";
+import { useEffect, useState } from "react";
 import type { SearchResult } from "../shared/types";
 import { formatDate, formatFileSize } from "../lib/utils/format";
+import { toFileUrl } from "../lib/utils/file-url";
 import { TagPill } from "./TagPill";
 import type { LibraryViewMode } from "../store/uiStore";
 import type { JSX } from "react";
@@ -55,7 +57,12 @@ export function FileCard({
   onAnalyze
 }: FileCardProps): JSX.Element {
   const { file } = result;
-  const isImage = [".png", ".jpg", ".jpeg", ".webp"].includes(file.extension);
+  const isImage = [".png", ".jpg", ".jpeg", ".webp"].includes(file.extension.toLowerCase());
+  const [isImagePreviewBroken, setIsImagePreviewBroken] = useState(false);
+
+  useEffect(() => {
+    setIsImagePreviewBroken(false);
+  }, [file.id, file.storedPath]);
 
   return (
     <article
@@ -67,10 +74,21 @@ export function FileCard({
       <button className="w-full text-left" onClick={() => onOpen(file.id)} type="button">
         <div className={clsx(viewMode === "list" ? "flex items-center gap-4" : "space-y-3")}>
           <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
-            {isImage ? (
-              <img alt={file.originalName} className="h-full w-full object-cover" src={`file://${file.storedPath}`} />
+            {isImage && !isImagePreviewBroken ? (
+              <img
+                alt={file.originalName}
+                className="h-full w-full object-cover"
+                onError={() => setIsImagePreviewBroken(true)}
+                src={toFileUrl(file.storedPath)}
+              />
+            ) : isImage ? (
+              <span className="text-2xl" title="Image preview unavailable">
+                🖼️
+              </span>
             ) : (
-              <span className="text-2xl">{file.extension === ".pdf" ? "📄" : file.extension === ".docx" ? "📝" : "📃"}</span>
+              <span className="text-2xl">
+                {file.extension === ".pdf" ? "📄" : file.extension === ".docx" ? "📝" : file.extension === ".pptx" ? "📊" : "📃"}
+              </span>
             )}
           </div>
 
