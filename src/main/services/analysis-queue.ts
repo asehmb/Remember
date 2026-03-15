@@ -1,7 +1,7 @@
 import PQueue from "p-queue";
 import { extractDocumentText } from "../../lib/parsers";
 import { isDocumentExtension, isImageExtension } from "../../lib/utils/files";
-import { TagMindRepository } from "../db/repository";
+import { RememberRepository } from "../db/repository";
 import { OpenAIAnalyzer } from "./openai-analyzer";
 
 function normalizeError(error: unknown): string {
@@ -16,7 +16,7 @@ export class AnalysisQueueService {
   private readonly queue = new PQueue({ concurrency: 3 });
 
   constructor(
-    private readonly repository: TagMindRepository,
+    private readonly repository: RememberRepository,
     private readonly analyzer: OpenAIAnalyzer
   ) {}
 

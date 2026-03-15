@@ -24,7 +24,7 @@ export function useLibraryData(filters: LibraryFilters): {
   const fetchLibrary = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await window.tagmind.listFiles(effectiveFilters);
+      const response = await window.remember.listFiles(effectiveFilters);
       setResults(response);
       setError(null);
     } catch (fetchError) {

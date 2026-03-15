@@ -99,7 +99,7 @@ export interface UploadResult {
   rejected: Array<{ path: string; reason: string }>;
 }
 
-export interface TagMindAPI {
+export interface RememberAPI {
   pickFiles: () => Promise<UploadResult>;
   pickFolderPath: () => Promise<string | null>;
   ingestFilePaths: (paths: string[]) => Promise<UploadResult>;

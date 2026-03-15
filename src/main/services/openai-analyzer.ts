@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import OpenAI from "openai";
 import { z } from "zod";
 import { DOCUMENT_ANALYSIS_PROMPT, IMAGE_ANALYSIS_PROMPT } from "../../lib/ai/prompts";
-import type { AiProviderId } from "../../shared/ai";
+import { providerRequiresApiKey, type AiProviderId } from "../../shared/ai";
 import type { AnalysisSaveInput } from "../db/repository";
 
 interface AiClientConfig {
@@ -56,18 +56,18 @@ export class OpenAIAnalyzer {
   ) {}
 
   private createClient(): { client: OpenAI; config: AiClientConfig } {
+    const config = this.getAiConfig();
     const apiKey = this.getApiKey();
-    if (!apiKey) {
+    if (providerRequiresApiKey(config.provider) && !apiKey) {
       throw new Error("AI API key is not configured");
     }
 
-    const config = this.getAiConfig();
     if (config.provider === "custom" && !config.baseUrl) {
       throw new Error("Custom provider requires a valid base URL");
     }
 
     const client = new OpenAI({
-      apiKey,
+      apiKey: apiKey ?? "not-required",
       baseURL: config.baseUrl ?? undefined
     });
 

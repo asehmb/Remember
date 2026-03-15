@@ -279,6 +279,9 @@ export function SettingsPage({
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Used to authenticate with the selected provider.
           </p>
+          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+            Optional for Ollama and some custom/local providers.
+          </p>
           {infoOpen.apiKey ? (
             <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
               Your key is stored locally and used only when sending AI requests. Clearing it
@@ -477,7 +480,7 @@ export function SettingsPage({
           {infoOpen.openclawIntegration ? (
             <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
               Enables a local REST endpoint for tools like OpenClaw to query status, tags, and search
-              results from your local TagLine library.
+              results from your local Remember library.
             </div>
           ) : null}
           <div className="flex flex-wrap items-center gap-2">
@@ -536,7 +539,7 @@ export function SettingsPage({
         </p>
         {infoOpen.dangerZone ? (
           <div className="mt-2 rounded-md border border-rose-200 bg-rose-100 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/60 dark:text-rose-200">
-            This permanently deletes your local library data and copied files from TagLine storage.
+            This permanently deletes your local library data and copied files from Remember storage.
             It cannot be undone.
           </div>
         ) : null}

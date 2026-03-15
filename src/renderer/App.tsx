@@ -27,7 +27,7 @@ export function App(): JSX.Element {
   const [selectedFile, setSelectedFile] = useState<FileRow | null>(null);
 
   const refreshSettings = async (): Promise<void> => {
-    const next = await window.tagmind.getSettings();
+    const next = await window.remember.getSettings();
     setSettings(next);
   };
 
@@ -46,7 +46,7 @@ export function App(): JSX.Element {
     }
 
     const run = async (): Promise<void> => {
-      const file = await window.tagmind.getFile(selectedFileId);
+      const file = await window.remember.getFile(selectedFileId);
       setSelectedFile(file);
     };
 
@@ -80,10 +80,10 @@ export function App(): JSX.Element {
         error={error}
         loading={loading}
         onAnalyze={(fileId) => {
-          void window.tagmind.triggerAnalysis(fileId).then(refreshAll);
+          void window.remember.triggerAnalysis(fileId).then(refreshAll);
         }}
         onDropPaths={async (paths) => {
-          const output = await window.tagmind.ingestFilePaths(paths);
+          const output = await window.remember.ingestFilePaths(paths);
           if (output.rejected.length > 0) {
             setToast(output.rejected.map((item) => `${item.path}: ${item.reason}`).join(" | "));
           }
@@ -91,14 +91,14 @@ export function App(): JSX.Element {
         }}
         onOpenFile={setSelectedFileId}
         onPickFiles={async () => {
-          const output = await window.tagmind.pickFiles();
+          const output = await window.remember.pickFiles();
           if (output.rejected.length > 0) {
             setToast(output.rejected.map((item) => `${item.path}: ${item.reason}`).join(" | "));
           }
           await refreshAll();
         }}
         onRetry={(fileId) => {
-          void window.tagmind.retryAnalysis(fileId).then(refreshAll);
+          void window.remember.retryAnalysis(fileId).then(refreshAll);
         }}
         onSelectTag={(tag) => setFilter("selectedTag", tag)}
         onSetViewMode={setViewMode}
@@ -129,7 +129,7 @@ export function App(): JSX.Element {
           <div className="h-2" />
           <div className="no-drag flex items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <h1 className="shrink-0 text-lg font-semibold tracking-tight">TagLine</h1>
+              <h1 className="shrink-0 text-lg font-semibold tracking-tight">Remember</h1>
               <SearchInput onChange={(value) => setFilter("query", value)} value={filters.query} />
             </div>
             <button
@@ -178,42 +178,42 @@ export function App(): JSX.Element {
             </div>
             <SettingsPage
               onClearApiKey={async () => {
-                await window.tagmind.clearApiKey();
+                await window.remember.clearApiKey();
                 await refreshSettings();
               }}
               onClearLibrary={async () => {
-                await window.tagmind.clearLibrary();
+                await window.remember.clearLibrary();
                 await refreshAll();
               }}
               onSaveApiKey={async (apiKey) => {
-                await window.tagmind.setApiKey(apiKey);
+                await window.remember.setApiKey(apiKey);
                 await refreshSettings();
               }}
               onToggleAutoAnalyze={async (enabled) => {
-                await window.tagmind.setAutoAnalyzeOnUpload(enabled);
+                await window.remember.setAutoAnalyzeOnUpload(enabled);
                 await refreshSettings();
               }}
               onToggleRestApi={async (enabled) => {
-                await window.tagmind.setRestApiEnabled(enabled);
+                await window.remember.setRestApiEnabled(enabled);
                 await refreshSettings();
               }}
               onSetWatchFolderPaths={async (watchFolderPaths) => {
-                await window.tagmind.setWatchFolderPaths(watchFolderPaths);
+                await window.remember.setWatchFolderPaths(watchFolderPaths);
                 await refreshSettings();
               }}
               onBrowseWatchFolderPath={async () => {
-                return window.tagmind.pickFolderPath();
+                return window.remember.pickFolderPath();
               }}
               onSaveAiProfile={async (profile) => {
-                await window.tagmind.saveAiProfile(profile);
+                await window.remember.saveAiProfile(profile);
                 await refreshSettings();
               }}
               onApplyAiProfile={async (profileId) => {
-                await window.tagmind.applyAiProfile(profileId);
+                await window.remember.applyAiProfile(profileId);
                 await refreshSettings();
               }}
               onDeleteAiProfile={async (profileId) => {
-                await window.tagmind.deleteAiProfile(profileId);
+                await window.remember.deleteAiProfile(profileId);
                 await refreshSettings();
               }}
               settings={settings}
@@ -226,23 +226,23 @@ export function App(): JSX.Element {
         file={selectedFile}
         onAddTag={async (tag) => {
           if (!selectedFile) return;
-          await window.tagmind.addManualTag(selectedFile.id, tag);
+          await window.remember.addManualTag(selectedFile.id, tag);
           await refreshAll();
         }}
         onAnalyze={async () => {
           if (!selectedFile) return;
-          await window.tagmind.triggerAnalysis(selectedFile.id);
+          await window.remember.triggerAnalysis(selectedFile.id);
           await refreshAll();
         }}
         onClose={() => setSelectedFileId(null)}
         onDeleteTag={async (tag) => {
           if (!selectedFile) return;
-          await window.tagmind.deleteTag(selectedFile.id, tag);
+          await window.remember.deleteTag(selectedFile.id, tag);
           await refreshAll();
         }}
         onRetry={async () => {
           if (!selectedFile) return;
-          await window.tagmind.retryAnalysis(selectedFile.id);
+          await window.remember.retryAnalysis(selectedFile.id);
           await refreshAll();
         }}
       />

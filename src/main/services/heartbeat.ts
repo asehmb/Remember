@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import type { Dirent } from "node:fs";
 import path from "node:path";
 import { isSupportedExtension, normalizeExtension } from "../../lib/utils/files";
-import { TagMindRepository } from "../db/repository";
+import { RememberRepository } from "../db/repository";
 import { FileIngestionService } from "./file-ingestion";
 import { SettingsService } from "./settings";
 
@@ -143,7 +143,7 @@ export class HeartbeatService {
   constructor(
     private readonly settingsService: SettingsService,
     private readonly ingestionService: FileIngestionService,
-    private readonly repository: TagMindRepository
+    private readonly repository: RememberRepository
   ) {}
 
   start(): void {
@@ -333,13 +333,13 @@ export class HeartbeatService {
         this.settingsService.setHeartbeatMetadata(summary.finishedAt, summarize(summary));
       } catch (error) {
         const metadataError = `Failed to persist heartbeat metadata: ${normalizeError(error)}`;
-        console.error(`[tagline] ${metadataError}`);
+        console.error(`[remember] ${metadataError}`);
       }
 
       if (summary.status === "error") {
-        console.error(`[tagline] heartbeat failed: ${summarize(summary)}`);
+        console.error(`[remember] heartbeat failed: ${summarize(summary)}`);
       } else {
-        console.log(`[tagline] heartbeat completed: ${summarize(summary)}`);
+        console.log(`[remember] heartbeat completed: ${summarize(summary)}`);
       }
     }
   }

@@ -12,7 +12,7 @@ import {
 import type { LibraryFilters, UploadResult } from "../shared/types";
 import { CHANNELS } from "./ipc/channels";
 import { createDatabase } from "./db/database";
-import { TagMindRepository } from "./db/repository";
+import { RememberRepository } from "./db/repository";
 import { SettingsService } from "./services/settings";
 import { OpenAIAnalyzer } from "./services/openai-analyzer";
 import { AnalysisQueueService } from "./services/analysis-queue";
@@ -28,15 +28,15 @@ import type { AiProviderId } from "../shared/ai";
 
 const isDev = process.env.NODE_ENV === "development";
 const devServerUrl = process.env.VITE_DEV_SERVER_URL ?? "http://localhost:5173";
-const APP_DISPLAY_NAME = "TagLine";
-const USER_DATA_DIRECTORY_NAME = "TagLine";
-const LEGACY_USER_DATA_DIRECTORY_NAME = "TagMind";
+const APP_DISPLAY_NAME = "Remember";
+const USER_DATA_DIRECTORY_NAME = "Remember";
+const LEGACY_USER_DATA_DIRECTORY_NAMES = ["TagLine", "TagMind"] as const;
 const REST_SEARCH_LIMIT = 25;
 
 app.setName(APP_DISPLAY_NAME);
 
 let mainWindow: BrowserWindow | null = null;
-let repository: TagMindRepository;
+let repository: RememberRepository;
 let settingsService: SettingsService;
 let queueService: AnalysisQueueService;
 let ingestionService: FileIngestionService;
@@ -189,19 +189,19 @@ async function syncRestServerState(): Promise<void> {
     if (shouldRun && !localRestServer.isRunning) {
       await localRestServer.start();
       console.log(
-        `[tagline] local REST server listening on ${localRestServer.baseUrl}`,
+        `[remember] local REST server listening on ${localRestServer.baseUrl}`,
       );
       return;
     }
 
     if (!shouldRun && localRestServer.isRunning) {
       await localRestServer.stop();
-      console.log("[tagline] local REST server stopped");
+      console.log("[remember] local REST server stopped");
     }
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown REST server error";
-    console.error(`[tagline] failed to apply local REST setting: ${message}`);
+    console.error(`[remember] failed to apply local REST setting: ${message}`);
   }
 }
 
@@ -234,10 +234,10 @@ async function createMainWindow(): Promise<BrowserWindow> {
   });
 
   if (isDev) {
-    console.log(`[tagline] loading dev url: ${devServerUrl}`);
+    console.log(`[remember] loading dev url: ${devServerUrl}`);
     await window.loadURL(devServerUrl);
   } else {
-    console.log("[tagline] loading production file: dist/index.html");
+    console.log("[remember] loading production file: dist/index.html");
     await window.loadFile(path.join(process.cwd(), "dist", "index.html"));
   }
 
@@ -250,7 +250,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
     "did-fail-load",
     (_event, errorCode, errorDescription, validatedURL) => {
       console.error(
-        `[tagline] renderer failed to load (${errorCode}): ${errorDescription} url=${validatedURL}`,
+        `[remember] renderer failed to load (${errorCode}): ${errorDescription} url=${validatedURL}`,
       );
     },
   );
@@ -462,18 +462,17 @@ function initializeServices(): void {
   }
 
   const appDataPath = app.getPath("appData");
-  const legacyUserDataPath = path.join(
-    appDataPath,
-    LEGACY_USER_DATA_DIRECTORY_NAME,
+  const legacyUserDataPaths = LEGACY_USER_DATA_DIRECTORY_NAMES.map((directoryName) =>
+    path.join(appDataPath, directoryName),
   );
   const userDataPath = app.getPath("userData");
   const fileStoragePath = path.join(userDataPath, "library-files");
 
   const database = createDatabase({
     userDataPath,
-    legacyUserDataPaths: [legacyUserDataPath],
+    legacyUserDataPaths,
   });
-  repository = new TagMindRepository(database);
+  repository = new RememberRepository(database);
   settingsService = new SettingsService(userDataPath);
   const analyzer = new OpenAIAnalyzer(
     () => settingsService.getApiKey(),
@@ -541,7 +540,7 @@ app.on("will-quit", () => {
         error instanceof Error
           ? error.message
           : "Unknown REST server shutdown error";
-      console.error(`[tagline] failed to stop local REST server: ${message}`);
+      console.error(`[remember] failed to stop local REST server: ${message}`);
     });
   }
   globalShortcut.unregisterAll();

@@ -3,13 +3,12 @@ const os = require('node:os');
 const path = require('node:path');
 const Database = require('better-sqlite3');
 
-const TAGLINE_DB_PATH = path.join(
-  os.homedir(),
-  'Library',
-  'Application Support',
-  'TagLine',
-  'tagmind.db'
-);
+const DB_CANDIDATE_PATHS = [
+  path.join(os.homedir(), 'Library', 'Application Support', 'Remember', 'remember.db'),
+  path.join(os.homedir(), 'Library', 'Application Support', 'TagLine', 'tagmind.db'),
+  path.join(os.homedir(), 'Library', 'Application Support', 'TagLine', 'remember.db'),
+  path.join(os.homedir(), 'Library', 'Application Support', 'TagMind', 'tagmind.db')
+];
 const DEFAULT_LIMIT = 10;
 const MAX_RESULT_LIMIT = 50;
 const MAX_TAG_LIMIT = 100;
@@ -85,12 +84,13 @@ function hasTable(db, tableName) {
 function createMissingDbResult(dbPath) {
   return {
     ok: false,
-    message: `TagLine database was not found at ${dbPath}.`,
+    message: `Remember database was not found at ${dbPath}.`,
     dbPath,
     guidance: [
-      'Open the TagLine desktop app on this Mac at least once.',
-      'Import a file so TagLine initializes the SQLite database.',
-      'Expected location: ~/Library/Application Support/TagLine/tagmind.db'
+      'Open the Remember desktop app on this Mac at least once.',
+      'Import a file so Remember initializes the SQLite database.',
+      'Expected location: ~/Library/Application Support/Remember/remember.db',
+      'Legacy locations are also checked automatically (TagLine/TagMind).'
     ]
   };
 }
@@ -99,21 +99,24 @@ function createDatabaseOpenError(dbPath, error) {
   const details = error instanceof Error ? error.message : String(error);
   return {
     ok: false,
-    message: `Unable to open TagLine database at ${dbPath}.`,
+    message: `Unable to open Remember database at ${dbPath}.`,
     dbPath,
     details,
     guidance: [
-      'Verify TagLine is installed and has been opened on this Mac.',
-      'Check file permissions for ~/Library/Application Support/TagLine.',
-      'If the DB is missing, launch TagLine and add at least one file.'
+      'Verify Remember is installed and has been opened on this Mac.',
+      'Check file permissions for ~/Library/Application Support/Remember.',
+      'If the DB is missing, launch Remember and add at least one file.'
     ]
   };
 }
 
-function openTagLineDatabase() {
-  const dbPath = TAGLINE_DB_PATH;
+function openRememberDatabase() {
+  const existingDbPath = DB_CANDIDATE_PATHS.find((candidatePath) =>
+    fs.existsSync(candidatePath)
+  );
+  const dbPath = existingDbPath ?? DB_CANDIDATE_PATHS[0];
 
-  if (!fs.existsSync(dbPath)) {
+  if (!existingDbPath) {
     return { db: null, dbPath, error: createMissingDbResult(dbPath) };
   }
 
@@ -224,7 +227,7 @@ function search_files(args = {}, context = {}) {
     colour: args.colour
   });
 
-  const { db, dbPath, error } = openTagLineDatabase();
+  const { db, dbPath, error } = openRememberDatabase();
   if (error || !db) {
     return error;
   }
@@ -275,7 +278,7 @@ function search_files(args = {}, context = {}) {
     const details = queryError instanceof Error ? queryError.message : String(queryError);
     return {
       ok: false,
-      message: 'Failed to query TagLine database for search_files.',
+      message: 'Failed to query Remember database for search_files.',
       dbPath,
       details
     };
@@ -295,7 +298,7 @@ function get_file_detail(args = {}, context = {}) {
     };
   }
 
-  const { db, dbPath, error } = openTagLineDatabase();
+  const { db, dbPath, error } = openRememberDatabase();
   if (error || !db) {
     return error;
   }
@@ -391,7 +394,7 @@ function get_file_detail(args = {}, context = {}) {
     const details = queryError instanceof Error ? queryError.message : String(queryError);
     return {
       ok: false,
-      message: 'Failed to query TagLine database for get_file_detail.',
+      message: 'Failed to query Remember database for get_file_detail.',
       dbPath,
       details
     };
@@ -414,7 +417,7 @@ function list_tags(args = {}, context = {}) {
 
   const orderBy = sortSql[sortBy] || sortSql.count;
 
-  const { db, dbPath, error } = openTagLineDatabase();
+  const { db, dbPath, error } = openRememberDatabase();
   if (error || !db) {
     return error;
   }
@@ -451,7 +454,7 @@ function list_tags(args = {}, context = {}) {
     const details = queryError instanceof Error ? queryError.message : String(queryError);
     return {
       ok: false,
-      message: 'Failed to query TagLine database for list_tags.',
+      message: 'Failed to query Remember database for list_tags.',
       dbPath,
       details
     };
@@ -472,7 +475,7 @@ function get_recent_files(args = {}, context = {}) {
     params.push(fileType);
   }
 
-  const { db, dbPath, error } = openTagLineDatabase();
+  const { db, dbPath, error } = openRememberDatabase();
   if (error || !db) {
     return error;
   }
@@ -511,7 +514,7 @@ function get_recent_files(args = {}, context = {}) {
     const details = queryError instanceof Error ? queryError.message : String(queryError);
     return {
       ok: false,
-      message: 'Failed to query TagLine database for get_recent_files.',
+      message: 'Failed to query Remember database for get_recent_files.',
       dbPath,
       details
     };

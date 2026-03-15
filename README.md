@@ -1,6 +1,6 @@
-# TagLine
+# Remember
 
-TagLine is a macOS-first cross-platform desktop app built with Electron + React + TypeScript for local file ingestion, AI-powered tagging, and semantic search.
+Remember is a macOS-first cross-platform desktop app built with Electron + React + TypeScript for local file ingestion, AI-powered tagging, and semantic search.
 
 ## Features
 
@@ -67,7 +67,7 @@ npm run dev
 
 ## Setting up the OpenClaw Skill
 
-Before setting up the skill, launch TagLine at least once and ingest at least one file so the local DB exists at `~/Library/Application Support/TagLine/tagmind.db`.
+Before setting up the skill, launch Remember at least once and ingest at least one file so the local DB exists at `~/Library/Application Support/Remember/remember.db`.
 
 1. Install OpenClaw globally:
 
@@ -78,13 +78,13 @@ Before setting up the skill, launch TagLine at least once and ingest at least on
 2. Copy this repository's skill into your OpenClaw skills directory:
 
    ```bash
-   cp -r ./openclaw-skill ~/.openclaw/skills/tagmind
+   cp -r ./openclaw-skill ~/.openclaw/skills/remember
    ```
 
 3. Install the skill dependencies:
 
    ```bash
-   cd ~/.openclaw/skills/tagmind && npm install
+   cd ~/.openclaw/skills/remember && npm install
    ```
 
 4. In your OpenClaw agent chat, run:
@@ -96,10 +96,10 @@ Before setting up the skill, launch TagLine at least once and ingest at least on
 5. Smoke-test with a finance query, for example:
 
    ```text
-   Search my TagLine library for finance documents about quarterly budget or forecast updates.
+   Search my Remember library for finance documents about quarterly budget or forecast updates.
    ```
 
-The OpenClaw skill reads TagLine data directly from SQLite (read-only). Separately, TagLine can expose a localhost REST API on `127.0.0.1:47821`; `GET /status` includes the latest heartbeat/sync summary.
+The OpenClaw skill reads Remember data directly from SQLite (read-only). Separately, Remember can expose a localhost REST API on `127.0.0.1:47821`; `GET /status` includes the latest heartbeat/sync summary.
 
 ### Example OpenClaw conversations
 
@@ -133,7 +133,7 @@ The key is stored locally in Electron user data storage and encrypted when OS se
 
 ## Local REST API (localhost only)
 
-When enabled in settings, TagLine starts a local REST server on `127.0.0.1:<restApiPort>` (default `47821`).
+When enabled in settings, Remember starts a local REST server on `127.0.0.1:<restApiPort>` (default `47821`).
 
 - `GET /status` - app status, DB file count, REST config, and latest heartbeat metadata (including concise `lastHeartbeatSummary`)
 - `GET /search?q=...` - FTS-backed search snapshot (`q` optional; empty query returns recent files)
@@ -155,7 +155,7 @@ Primary schema file:
 
 Runtime DB location:
 
-- `<Electron userData>/tagmind.db` (macOS default: `~/Library/Application Support/TagLine/tagmind.db`)
+- `<Electron userData>/remember.db` (macOS default: `~/Library/Application Support/Remember/remember.db`)
 
 ## Notes
 

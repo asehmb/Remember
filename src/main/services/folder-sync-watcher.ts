@@ -28,13 +28,13 @@ export class FolderSyncWatcherService {
 
         watcher.on("error", (error) => {
           const message = error instanceof Error ? error.message : String(error);
-          console.error(`[tagline] folder watch error for "${watchFolderPath}": ${message}`);
+          console.error(`[remember] folder watch error for "${watchFolderPath}": ${message}`);
         });
 
         this.watchers.push(watcher);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error(`[tagline] unable to watch folder "${watchFolderPath}": ${message}`);
+        console.error(`[remember] unable to watch folder "${watchFolderPath}": ${message}`);
       }
     }
   }

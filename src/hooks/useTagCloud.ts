@@ -14,7 +14,7 @@ export function useTagCloud(): {
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
-      const tags = await window.tagmind.getTagCloud();
+      const tags = await window.remember.getTagCloud();
       setItems(tags);
       setError(null);
     } catch (fetchError) {

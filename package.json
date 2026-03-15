@@ -1,6 +1,6 @@
 {
-  "name": "tagline",
-  "productName": "TagLine",
+  "name": "remember",
+  "productName": "Remember",
   "version": "0.1.0",
   "description": "AI-powered local file tagging and search desktop app",
   "main": "dist-electron/index.js",
@@ -55,8 +55,8 @@
     "wait-on": "^8.0.2"
   },
   "build": {
-    "appId": "com.tagline.desktop",
-    "productName": "TagLine",
+    "appId": "com.remember.desktop",
+    "productName": "Remember",
     "files": [
       "dist/**/*",
       "dist-electron/**/*",

@@ -3,13 +3,13 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { guessMimeType, isSupportedExtension, normalizeExtension } from "../../lib/utils/files";
 import type { UploadResult } from "../../shared/types";
-import { TagMindRepository } from "../db/repository";
+import { RememberRepository } from "../db/repository";
 import { AnalysisQueueService } from "./analysis-queue";
 import { SettingsService } from "./settings";
 
 export class FileIngestionService {
   constructor(
-    private readonly repository: TagMindRepository,
+    private readonly repository: RememberRepository,
     private readonly settingsService: SettingsService,
     private readonly queueService: AnalysisQueueService,
     private readonly filesDirectory: string

@@ -1,8 +1,8 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { TagMindAPI } from "../shared/types";
+import type { RememberAPI } from "../shared/types";
 import { CHANNELS } from "./ipc/channels";
 
-const api: TagMindAPI = {
+const api: RememberAPI = {
   pickFiles: () => ipcRenderer.invoke(CHANNELS.PICK_FILES),
   pickFolderPath: () => ipcRenderer.invoke(CHANNELS.PICK_FOLDER_PATH),
   ingestFilePaths: (paths) => ipcRenderer.invoke(CHANNELS.INGEST_FILE_PATHS, paths),
@@ -29,4 +29,4 @@ const api: TagMindAPI = {
   clearLibrary: () => ipcRenderer.invoke(CHANNELS.CLEAR_LIBRARY)
 };
 
-contextBridge.exposeInMainWorld("tagmind", api);
+contextBridge.exposeInMainWorld("remember", api);

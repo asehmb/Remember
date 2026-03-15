@@ -20,6 +20,11 @@ export interface AiProviderPreset {
   defaultVisionModel: string;
 }
 
+const OPTIONAL_API_KEY_PROVIDER_IDS: readonly AiProviderId[] = [
+  "ollama",
+  "custom",
+];
+
 export const AI_PROVIDER_PRESETS: readonly AiProviderPreset[] = [
   {
     id: "openai",
@@ -96,4 +101,8 @@ export function getAiProviderPreset(
     throw new Error(`Unsupported AI provider: ${providerId}`);
   }
   return preset;
+}
+
+export function providerRequiresApiKey(providerId: AiProviderId): boolean {
+  return !OPTIONAL_API_KEY_PROVIDER_IDS.includes(providerId);
 }

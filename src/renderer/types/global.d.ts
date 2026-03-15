@@ -1,8 +1,8 @@
-import type { TagMindAPI } from "@/shared/types";
+import type { RememberAPI } from "@/shared/types";
 
 declare global {
   interface Window {
-    tagmind: TagMindAPI;
+    remember: RememberAPI;
   }
 }
 

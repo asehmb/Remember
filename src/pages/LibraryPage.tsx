@@ -116,7 +116,7 @@ export function LibraryPage({
 
       {!loading && results.length === 0 ? (
         <EmptyState
-          description="Drop files into TagLine to start auto-tagging with AI and build your searchable library."
+          description="Drop files into Remember to start auto-tagging with AI and build your searchable library."
           title="Your library is empty"
         />
       ) : null}

@@ -3,8 +3,8 @@ import fs from "node:fs";
 import Database from "better-sqlite3";
 import { SCHEMA_SQL } from "./schema";
 
-const DB_FILENAME = "tagmind.db";
-const LEGACY_DB_FILENAME = "tagmind.sqlite";
+const DB_FILENAME = "remember.db";
+const LEGACY_DB_FILENAMES = ["remember.sqlite", "tagmind.db", "tagmind.sqlite"] as const;
 
 export interface CreateDatabaseOptions {
   userDataPath: string;
@@ -48,7 +48,7 @@ function collectLegacyCandidates(
   const candidates = new Set<string>();
 
   for (const rootPath of [userDataPath, ...legacyUserDataPaths]) {
-    for (const filename of [LEGACY_DB_FILENAME, DB_FILENAME]) {
+    for (const filename of [DB_FILENAME, ...LEGACY_DB_FILENAMES]) {
       const candidatePath = path.resolve(path.join(rootPath, filename));
       if (candidatePath !== resolvedTargetPath) {
         candidates.add(candidatePath);

@@ -180,7 +180,7 @@ function mapRestSearchRow(row: RestSearchDbRow, normalizedQuery: string): RestSe
   };
 }
 
-export class TagMindRepository {
+export class RememberRepository {
   constructor(private readonly db: Database.Database) {}
 
   insertFile(input: FileInsertInput): void {
