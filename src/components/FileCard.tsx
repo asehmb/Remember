@@ -23,12 +23,15 @@ function highlight(text: string, query: string): JSX.Element {
     <>
       {parts.map((part, index) =>
         index % 2 === 1 ? (
-          <mark key={`${part}-${index}`} className="rounded bg-yellow-200 px-0.5 text-slate-900">
+          <mark
+            key={`${part}-${index}`}
+            className="rounded bg-yellow-200 px-0.5 text-slate-900"
+          >
             {part}
           </mark>
         ) : (
           <span key={`${part}-${index}`}>{part}</span>
-        )
+        ),
       )}
     </>
   );
@@ -42,7 +45,10 @@ function statusTone(status: SearchResult["file"]["status"]): string {
   return "text-rose-600 dark:text-rose-400";
 }
 
-function toSnippet(text: string, maxLength = DOCUMENT_THUMBNAIL_SNIPPET_MAX_LENGTH): string {
+function toSnippet(
+  text: string,
+  maxLength = DOCUMENT_THUMBNAIL_SNIPPET_MAX_LENGTH,
+): string {
   if (text.length <= maxLength) {
     return text;
   }
@@ -80,8 +86,9 @@ function extractPptxThumbnailSnippet(rawText: string): string | null {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const contentLines =
-    /^slide\s+\d+/i.test(slideLines[0] ?? "") ? slideLines.slice(1) : slideLines;
+  const contentLines = /^slide\s+\d+/i.test(slideLines[0] ?? "")
+    ? slideLines.slice(1)
+    : slideLines;
   const sourceText = contentLines.join(" ").replace(/\s+/g, " ").trim();
   return sourceText ? toSnippet(sourceText) : null;
 }
@@ -101,7 +108,7 @@ export function FileCard({
   viewMode,
   onOpen,
   onRetry,
-  onAnalyze
+  onAnalyze,
 }: FileCardProps): JSX.Element {
   const { file } = result;
   const extension = file.extension.toLowerCase();
@@ -110,8 +117,11 @@ export function FileCard({
   const isPptx = extension === ".pptx";
   const shouldShowDocumentThumbnail = isDocx || isPptx;
   const [isImagePreviewBroken, setIsImagePreviewBroken] = useState(false);
-  const [documentThumbnailSnippet, setDocumentThumbnailSnippet] = useState<string | null>(null);
-  const [isDocumentThumbnailLoading, setIsDocumentThumbnailLoading] = useState(false);
+  const [documentThumbnailSnippet, setDocumentThumbnailSnippet] = useState<
+    string | null
+  >(null);
+  const [isDocumentThumbnailLoading, setIsDocumentThumbnailLoading] =
+    useState(false);
 
   useEffect(() => {
     setIsImagePreviewBroken(false);
@@ -179,12 +189,20 @@ export function FileCard({
     <article
       className={clsx(
         "rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900",
-        viewMode === "list" ? "flex items-center gap-4" : "space-y-3"
+        viewMode === "list" ? "flex items-center gap-4" : "space-y-3",
       )}
     >
-      <button className="w-full text-left" onClick={() => onOpen(file.id)} type="button">
-        <div className={clsx(viewMode === "list" ? "flex items-center gap-4" : "space-y-3")}>
-          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+      <button
+        className="w-full text-left"
+        onClick={() => onOpen(file.id)}
+        type="button"
+      >
+        <div
+          className={clsx(
+            viewMode === "list" ? "flex items-center gap-4" : "space-y-3",
+          )}
+        >
+          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-slate-900 dark:bg-slate-800">
             {isImage && !isImagePreviewBroken ? (
               <img
                 alt={file.originalName}
@@ -201,7 +219,9 @@ export function FileCard({
                 <div
                   className={clsx(
                     "h-full w-full overflow-hidden rounded border bg-white px-1.5 py-1 shadow-sm dark:bg-slate-900",
-                    isPptx ? "border-violet-200 dark:border-violet-800/80" : "border-slate-200 dark:border-slate-700"
+                    isPptx
+                      ? "border-violet-200 dark:border-violet-800/80"
+                      : "border-slate-200 dark:border-slate-700",
                   )}
                 >
                   <p className="truncate text-[7px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -210,28 +230,44 @@ export function FileCard({
                   <p className="mt-1 line-clamp-4 break-words text-[8px] leading-3 text-slate-600 dark:text-slate-300">
                     {isDocumentThumbnailLoading
                       ? "Loading preview..."
-                      : documentThumbnailSnippet ?? (isPptx ? "No text on first slide." : "No text on first page.")}
+                      : (documentThumbnailSnippet ??
+                        (isPptx
+                          ? "No text on first slide."
+                          : "No text on first page."))}
                   </p>
                 </div>
               </div>
             ) : (
               <span className="text-2xl">
-                {extension === ".pdf" ? "📄" : extension === ".docx" ? "📝" : extension === ".pptx" ? "📊" : "📃"}
+                {extension === ".pdf"
+                  ? "📄"
+                  : extension === ".docx"
+                    ? "📝"
+                    : extension === ".pptx"
+                      ? "📊"
+                      : "📃"}
               </span>
             )}
           </div>
 
           <div className="min-w-0 flex-1 space-y-1">
-            <h3 className="truncate text-sm font-semibold">{highlight(file.originalName, query)}</h3>
+            <h3 className="truncate text-sm font-semibold">
+              {highlight(file.originalName, query)}
+            </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {file.extension.toUpperCase().replace(".", "")} · {formatFileSize(file.sizeBytes)} · {formatDate(file.uploadedAt)}
+              {file.extension.toUpperCase().replace(".", "")} ·{" "}
+              {formatFileSize(file.sizeBytes)} · {formatDate(file.uploadedAt)}
             </p>
             <p className={clsx("text-xs font-medium", statusTone(file.status))}>
-              {file.status === "processing" ? "Processing with AI..." : file.status}
+              {file.status === "processing"
+                ? "Processing with AI..."
+                : file.status}
             </p>
 
             {file.analysis?.summary ? (
-              <p className="line-clamp-2 text-xs text-slate-600 dark:text-slate-300">{highlight(file.analysis.summary, query)}</p>
+              <p className="line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
+                {highlight(file.analysis.summary, query)}
+              </p>
             ) : null}
 
             <div className="flex flex-wrap gap-1.5">
@@ -265,7 +301,9 @@ export function FileCard({
         ) : null}
 
         {result.matchedTags.length > 0 ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400">Matched: {result.matchedTags.join(", ")}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Matched: {result.matchedTags.join(", ")}
+          </p>
         ) : null}
       </div>
     </article>

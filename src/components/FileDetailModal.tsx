@@ -63,7 +63,8 @@ function buildDocxPreviewPages(rawText: string): PreviewPage[] {
     .map((segment) => segment.trim())
     .filter(Boolean);
 
-  const sourceBlocks = paragraphBlocks.length > 0 ? paragraphBlocks : [normalized];
+  const sourceBlocks =
+    paragraphBlocks.length > 0 ? paragraphBlocks : [normalized];
   const pages: string[] = [];
   let currentPage = "";
 
@@ -108,9 +109,7 @@ function buildPptxPreviewPages(rawText: string): PreviewPage[] {
     const hasSlideTitle = /^slide\s+\d+/i.test(firstLine);
 
     const title = hasSlideTitle ? firstLine : `Slide ${index + 1}`;
-    const content = hasSlideTitle
-      ? lines.slice(1).join("\n").trim()
-      : segment;
+    const content = hasSlideTitle ? lines.slice(1).join("\n").trim() : segment;
 
     return {
       title,
@@ -127,7 +126,7 @@ export function FileDetailModal({
   onRetry,
   onAnalyze,
   onCancelAnalysis,
-  onRemoveFile
+  onRemoveFile,
 }: FileDetailModalProps): JSX.Element | null {
   const [tagInput, setTagInput] = useState("");
   const [previewText, setPreviewText] = useState<string | null>(null);
@@ -183,7 +182,9 @@ export function FileDetailModal({
         if (cancelled) {
           return;
         }
-        setPreviewError(error instanceof Error ? error.message : "Failed to load preview");
+        setPreviewError(
+          error instanceof Error ? error.message : "Failed to load preview",
+        );
       })
       .finally(() => {
         if (cancelled) {
@@ -206,64 +207,94 @@ export function FileDetailModal({
     "inline-flex items-center rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800";
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-6" onClick={onClose}>
+    <div
+      className="no-drag fixed inset-0 z-40 flex items-center justify-center p-6 bg-slate-700/50"
+      onClick={onClose}
+    >
       <div
-        className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900"
+        className="no-drag max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-300 bg-slate-100 p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900 md:flex md:h-[88vh] md:max-h-[88vh] md:flex-col md:overflow-hidden"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between">
+        <div className="relative z-10 flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">{file.originalName}</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {file.extension.toUpperCase().replace(".", "")} · {formatFileSize(file.sizeBytes)} · Uploaded {formatDate(file.uploadedAt)}
+              {file.extension.toUpperCase().replace(".", "")} ·{" "}
+              {formatFileSize(file.sizeBytes)} · Uploaded{" "}
+              {formatDate(file.uploadedAt)}
             </p>
           </div>
 
-          <button className="rounded-md px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800" onClick={onClose} type="button">
+          <button
+            className="no-drag relative z-20 shrink-0 rounded-md border border-slate-300 px-3.5 py-1.5 text-sm hover:bg-slate-200 dark:border-slate-700 dark:hover:bg-slate-800"
+            onClick={onClose}
+            type="button"
+          >
             Close
           </button>
         </div>
 
-        <div className="mt-5 grid gap-5 md:grid-cols-[1.15fr,0.85fr]">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
+        <div className="mt-5 grid gap-5 md:min-h-0 md:flex-1 md:grid-cols-[minmax(0,1fr)_22rem] md:grid-rows-1">
+          <div className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950 md:min-h-0">
             {isImage && !isImagePreviewBroken ? (
-              <img
-                alt={file.originalName}
-                className="mx-auto max-h-[420px] rounded-lg object-contain"
-                onError={() => setIsImagePreviewBroken(true)}
-                src={fileUrl}
-              />
+              <div className="flex min-h-[420px] items-center justify-center md:min-h-0 md:flex-1">
+                <img
+                  alt={file.originalName}
+                  className="max-h-full w-full rounded-lg object-contain"
+                  onError={() => setIsImagePreviewBroken(true)}
+                  src={fileUrl}
+                />
+              </div>
             ) : isImage ? (
-              <div className="flex h-[240px] flex-col items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex min-h-[240px] flex-col items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400 md:min-h-0 md:flex-1">
                 <span>Image preview unavailable.</span>
-                <a className={openFileButtonClass} href={fileUrl} rel="noreferrer" target="_blank">
+                <a
+                  className={openFileButtonClass}
+                  href={fileUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
                   Open file
                 </a>
               </div>
             ) : isPdf ? (
               <object
-                className="h-[420px] w-full rounded-lg border border-slate-200 dark:border-slate-800"
+                className="min-h-[420px] w-full rounded-lg border border-slate-200 dark:border-slate-800 md:h-full md:min-h-0"
                 data={fileUrl}
                 type="application/pdf"
               >
                 <div className="flex h-full items-center justify-center text-sm text-slate-500 dark:text-slate-400">
                   Unable to preview this PDF inline.
-                  <a className={`ml-2 ${openFileButtonClass}`} href={fileUrl} rel="noreferrer" target="_blank">
+                  <a
+                    className={`ml-2 ${openFileButtonClass}`}
+                    href={fileUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
                     Open file
                   </a>
                 </div>
               </object>
             ) : usesPagedDocumentPreview ? (
-              <div className="space-y-2">
+              <div className="flex min-h-[420px] min-w-0 flex-col gap-2 md:h-full md:min-h-0">
                 <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span>{isPptx ? "Presentation preview" : "Document preview"}</span>
-                  <a className={openFileButtonClass} href={fileUrl} rel="noreferrer" target="_blank">
+                  <span>
+                    {isPptx ? "Presentation preview" : "Document preview"}
+                  </span>
+                  <a
+                    className={openFileButtonClass}
+                    href={fileUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
                     Open file
                   </a>
                 </div>
-                <div className="h-[420px] overflow-y-auto rounded-lg border border-slate-200 bg-slate-200/60 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <div className="min-h-0 min-w-0 flex-1 overflow-y-auto rounded-lg border border-slate-200 bg-slate-200/60 p-4 dark:border-slate-800 dark:bg-slate-950">
                   {previewLoading ? (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Loading preview...</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Loading preview...
+                    </p>
                   ) : previewError ? (
                     <p className="text-sm text-rose-500">{previewError}</p>
                   ) : pagedPreviewPages.length > 0 ? (
@@ -283,45 +314,65 @@ export function FileDetailModal({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No readable preview text available.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      No readable preview text available.
+                    </p>
                   )}
                 </div>
               </div>
             ) : supportsTextPreview ? (
-              <div className="space-y-2">
+              <div className="flex min-h-[420px] min-w-0 flex-col gap-2 md:h-full md:min-h-0">
                 <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                   <span>Document text preview</span>
-                  <a className={openFileButtonClass} href={fileUrl} rel="noreferrer" target="_blank">
+                  <a
+                    className={openFileButtonClass}
+                    href={fileUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
                     Open file
                   </a>
                 </div>
-                <div className="h-[420px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="min-h-0 min-w-0 flex-1 overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 text-sm dark:border-slate-800 dark:bg-slate-900">
                   {previewLoading ? (
-                    <p className="text-slate-500 dark:text-slate-400">Loading preview...</p>
+                    <p className="text-slate-500 dark:text-slate-400">
+                      Loading preview...
+                    </p>
                   ) : previewError ? (
                     <p className="text-rose-500">{previewError}</p>
                   ) : previewText && previewText.trim() ? (
-                    <pre className="whitespace-pre-wrap break-words font-sans">{previewText}</pre>
+                    <pre className="whitespace-pre-wrap break-words font-sans">
+                      {previewText}
+                    </pre>
                   ) : (
-                    <p className="text-slate-500 dark:text-slate-400">No readable preview text available.</p>
+                    <p className="text-slate-500 dark:text-slate-400">
+                      No readable preview text available.
+                    </p>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="flex h-[240px] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex min-h-[240px] items-center justify-center text-sm text-slate-500 dark:text-slate-400 md:min-h-0 md:flex-1">
                 <span>Preview is limited for this format.</span>
-                <a className={`ml-2 ${openFileButtonClass}`} href={fileUrl} rel="noreferrer" target="_blank">
+                <a
+                  className={`ml-2 ${openFileButtonClass}`}
+                  href={fileUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
                   Open file
                 </a>
               </div>
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 md:min-h-0 md:w-[22rem] md:min-w-[22rem] md:overflow-x-hidden md:overflow-y-auto md:pr-1">
             <section className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
               <h3 className="text-sm font-semibold">Tags</h3>
               <div className="mt-2 flex flex-wrap gap-2">
-                {file.tags.length === 0 ? <p className="text-sm text-slate-500">No tags yet</p> : null}
+                {file.tags.length === 0 ? (
+                  <p className="text-sm text-slate-500">No tags yet</p>
+                ) : null}
                 {file.tags.map((tag) => (
                   <div key={tag} className="flex items-center gap-1">
                     <TagPill label={tag} />
@@ -366,31 +417,36 @@ export function FileDetailModal({
                 <div className="mt-2 space-y-2 text-sm">
                   {file.analysis.mainTopic ? (
                     <p>
-                      <span className="font-medium">Main topic:</span> {file.analysis.mainTopic}
+                      <span className="font-medium">Main topic:</span>{" "}
+                      {file.analysis.mainTopic}
                     </p>
                   ) : null}
 
                   {file.analysis.summary ? (
                     <p>
-                      <span className="font-medium">Summary:</span> {file.analysis.summary}
+                      <span className="font-medium">Summary:</span>{" "}
+                      {file.analysis.summary}
                     </p>
                   ) : null}
 
                   {file.analysis.sceneDescription ? (
                     <p>
-                      <span className="font-medium">Scene:</span> {file.analysis.sceneDescription}
+                      <span className="font-medium">Scene:</span>{" "}
+                      {file.analysis.sceneDescription}
                     </p>
                   ) : null}
 
                   {file.analysis.moodTone ? (
                     <p>
-                      <span className="font-medium">Mood:</span> {file.analysis.moodTone}
+                      <span className="font-medium">Mood:</span>{" "}
+                      {file.analysis.moodTone}
                     </p>
                   ) : null}
 
                   {file.analysis.sentiment ? (
                     <p>
-                      <span className="font-medium">Sentiment:</span> {file.analysis.sentiment}
+                      <span className="font-medium">Sentiment:</span>{" "}
+                      {file.analysis.sentiment}
                     </p>
                   ) : null}
 
@@ -399,8 +455,14 @@ export function FileDetailModal({
                       <p className="font-medium">Dominant colors</p>
                       <ul className="mt-1 space-y-1">
                         {file.analysis.dominantColors.map((color) => (
-                          <li key={`${color.hex}-${color.name}`} className="flex items-center gap-2">
-                            <span className="inline-block h-3.5 w-3.5 rounded-full border border-slate-300" style={{ backgroundColor: color.hex }} />
+                          <li
+                            key={`${color.hex}-${color.name}`}
+                            className="flex items-center gap-2"
+                          >
+                            <span
+                              className="inline-block h-3.5 w-3.5 rounded-full border border-slate-300"
+                              style={{ backgroundColor: color.hex }}
+                            />
                             {color.name} ({color.hex})
                           </li>
                         ))}
@@ -410,29 +472,41 @@ export function FileDetailModal({
 
                   {file.analysis.entities.length > 0 ? (
                     <p>
-                      <span className="font-medium">Entities:</span> {file.analysis.entities.join(", ")}
+                      <span className="font-medium">Entities:</span>{" "}
+                      {file.analysis.entities.join(", ")}
                     </p>
                   ) : null}
 
                   {file.analysis.ocrText ? (
                     <p>
-                      <span className="font-medium">Detected text:</span> {file.analysis.ocrText}
+                      <span className="font-medium">Detected text:</span>{" "}
+                      {file.analysis.ocrText}
                     </p>
                   ) : null}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-slate-500">No AI analysis yet.</p>
+                <p className="mt-2 text-sm text-slate-500">
+                  No AI analysis yet.
+                </p>
               )}
 
               <div className="mt-4 flex gap-2">
                 {file.status === "error" ? (
-                  <button className="rounded-md bg-rose-500 px-3 py-1.5 text-xs font-medium text-white" onClick={() => void onRetry()} type="button">
+                  <button
+                    className="rounded-md bg-rose-500 px-3 py-1.5 text-xs font-medium text-white"
+                    onClick={() => void onRetry()}
+                    type="button"
+                  >
                     Retry analysis
                   </button>
                 ) : null}
 
                 {file.status === "pending" ? (
-                  <button className="rounded-md bg-accent-500 px-3 py-1.5 text-xs font-medium text-white" onClick={() => void onAnalyze()} type="button">
+                  <button
+                    className="rounded-md bg-accent-500 px-3 py-1.5 text-xs font-medium text-white"
+                    onClick={() => void onAnalyze()}
+                    type="button"
+                  >
                     Run analysis
                   </button>
                 ) : null}
@@ -441,7 +515,9 @@ export function FileDetailModal({
                   <button
                     className="rounded-md border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50 dark:border-amber-900 dark:text-amber-300 dark:hover:bg-amber-950/30"
                     onClick={() => {
-                      if (window.confirm("Cancel upload/analysis for this file?")) {
+                      if (
+                        window.confirm("Cancel upload/analysis for this file?")
+                      ) {
                         void onCancelAnalysis();
                       }
                     }}
@@ -454,7 +530,11 @@ export function FileDetailModal({
                 <button
                   className="rounded-md border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30"
                   onClick={() => {
-                    if (window.confirm("Remove this file from Remember? This only removes it from the app library.")) {
+                    if (
+                      window.confirm(
+                        "Remove this file from Remember? This only removes it from the app library.",
+                      )
+                    ) {
                       void onRemoveFile();
                     }
                   }}
@@ -464,7 +544,11 @@ export function FileDetailModal({
                 </button>
               </div>
 
-              {file.errorMessage ? <p className="mt-2 text-xs text-rose-500">{file.errorMessage}</p> : null}
+              {file.errorMessage ? (
+                <p className="mt-2 text-xs text-rose-500">
+                  {file.errorMessage}
+                </p>
+              ) : null}
             </section>
           </div>
         </div>
