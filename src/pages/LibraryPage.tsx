@@ -6,10 +6,20 @@ import { FileCard } from "../components/FileCard";
 import { SkeletonCards } from "../components/SkeletonCards";
 import { TagPill } from "../components/TagPill";
 import { UploadDropzone } from "../components/UploadDropzone";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { JSX } from "react";
 
 const TAG_CLOUD_PREVIEW_LIMIT = 20;
+const DEFAULT_LIBRARY_PAGE_SIZE = 50;
+const MIN_LIBRARY_PAGE_SIZE = 1;
+const MAX_LIBRARY_PAGE_SIZE = 500;
+
+function normalizePageSize(value: number): number {
+  if (!Number.isInteger(value)) {
+    return DEFAULT_LIBRARY_PAGE_SIZE;
+  }
+  return Math.min(Math.max(value, MIN_LIBRARY_PAGE_SIZE), MAX_LIBRARY_PAGE_SIZE);
+}
 
 interface LibraryPageProps {
   results: SearchResult[];
@@ -49,8 +59,43 @@ export function LibraryPage({
   onAnalyze
 }: LibraryPageProps): JSX.Element {
   const [showAllTags, setShowAllTags] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_LIBRARY_PAGE_SIZE);
+  const [pageSizeInput, setPageSizeInput] = useState(String(DEFAULT_LIBRARY_PAGE_SIZE));
   const hasMoreTags = tagCloud.length > TAG_CLOUD_PREVIEW_LIMIT;
   const visibleTags = showAllTags ? tagCloud : tagCloud.slice(0, TAG_CLOUD_PREVIEW_LIMIT);
+  const totalResults = results.length;
+  const totalPages = Math.max(1, Math.ceil(totalResults / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const pageStartIndex = (activePage - 1) * pageSize;
+  const pageEndIndex = Math.min(pageStartIndex + pageSize, totalResults);
+  const visibleResults = useMemo(
+    () => results.slice(pageStartIndex, pageEndIndex),
+    [pageEndIndex, pageStartIndex, results]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, selectedTag]);
+
+  useEffect(() => {
+    if (currentPage !== activePage) {
+      setCurrentPage(activePage);
+    }
+  }, [activePage, currentPage]);
+
+  const applyPageSize = (): void => {
+    const parsed = Number.parseInt(pageSizeInput.trim(), 10);
+    if (!Number.isInteger(parsed)) {
+      setPageSizeInput(String(pageSize));
+      return;
+    }
+
+    const nextPageSize = normalizePageSize(parsed);
+    setPageSize(nextPageSize);
+    setPageSizeInput(String(nextPageSize));
+    setCurrentPage(1);
+  };
 
   return (
     <div className="space-y-4">
@@ -161,8 +206,62 @@ export function LibraryPage({
         />
       ) : null}
 
+      {totalResults > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Showing {pageStartIndex + 1}-{pageEndIndex} of {totalResults}
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="text-xs text-slate-500 dark:text-slate-400" htmlFor="library-page-size">
+              Per page
+            </label>
+            <input
+              id="library-page-size"
+              className="w-20 rounded border border-slate-300 bg-white px-2 py-1 text-xs outline-none focus:border-accent-400 dark:border-slate-700 dark:bg-slate-900"
+              max={MAX_LIBRARY_PAGE_SIZE}
+              min={MIN_LIBRARY_PAGE_SIZE}
+              onBlur={applyPageSize}
+              onChange={(event) => setPageSizeInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  applyPageSize();
+                }
+              }}
+              type="number"
+              value={pageSizeInput}
+            />
+            <button
+              className="rounded border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+              onClick={applyPageSize}
+              type="button"
+            >
+              Apply
+            </button>
+            <button
+              className="rounded border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800"
+              disabled={activePage <= 1}
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              type="button"
+            >
+              Prev
+            </button>
+            <span className="min-w-24 text-center text-xs text-slate-500 dark:text-slate-400">
+              Page {activePage} / {totalPages}
+            </span>
+            <button
+              className="rounded border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800"
+              disabled={activePage >= totalPages}
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              type="button"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <div className={viewMode === "grid" ? "grid gap-4 md:grid-cols-2 xl:grid-cols-3" : "space-y-3"}>
-        {results.map((result) => (
+        {visibleResults.map((result) => (
           <FileCard
             key={result.file.id}
             onAnalyze={onAnalyze}
