@@ -345,6 +345,11 @@ export class RememberRepository {
       params.push(filters.sentiment);
     }
 
+    if (filters.uploadStatus !== "all") {
+      clauses.push("f.status = ?");
+      params.push(filters.uploadStatus);
+    }
+
     if (filters.selectedTag) {
       clauses.push(
         "EXISTS (SELECT 1 FROM tags ft WHERE ft.file_id = f.id AND LOWER(ft.tag) = LOWER(?))"

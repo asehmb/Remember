@@ -137,8 +137,10 @@ export function App(): JSX.Element {
           });
         }}
         onSelectTag={(tag) => setFilter("selectedTag", tag)}
+        onSetUploadStatus={(uploadStatus) => setFilter("uploadStatus", uploadStatus)}
         onSetViewMode={setViewMode}
         query={filters.query}
+        uploadStatus={filters.uploadStatus}
         results={results}
         selectedTag={filters.selectedTag}
         tagCloud={tagCloud}

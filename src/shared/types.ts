@@ -56,6 +56,7 @@ export interface LibraryFilters {
   fileType: string | null;
   dominantColor: string | null;
   sentiment: Sentiment | null;
+  uploadStatus: "all" | "queued" | "error";
   uploadedWithin: "all" | "7d" | "30d" | "365d";
   selectedTag: string | null;
 }

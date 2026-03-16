@@ -77,6 +77,7 @@ function defaultFilters(): LibraryFilters {
     fileType: null,
     dominantColor: null,
     sentiment: null,
+    uploadStatus: "all",
     uploadedWithin: "all",
     selectedTag: null,
   };

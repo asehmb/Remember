@@ -1,5 +1,4 @@
-import type { SearchResult } from "../shared/types";
-import type { TagCloudItem } from "../shared/types";
+import type { LibraryFilters, SearchResult, TagCloudItem } from "../shared/types";
 import type { LibraryViewMode } from "../store/uiStore";
 import { EmptyState } from "../components/EmptyState";
 import { FileCard } from "../components/FileCard";
@@ -28,9 +27,11 @@ interface LibraryPageProps {
   loading: boolean;
   error: string | null;
   query: string;
+  uploadStatus: LibraryFilters["uploadStatus"];
   hasQueuedFiles: boolean;
   viewMode: LibraryViewMode;
   onSetViewMode: (mode: LibraryViewMode) => void;
+  onSetUploadStatus: (uploadStatus: LibraryFilters["uploadStatus"]) => void;
   onSelectTag: (tag: string | null) => void;
   onPickFiles: () => Promise<void>;
   onDropPaths: (paths: string[]) => Promise<void>;
@@ -47,9 +48,11 @@ export function LibraryPage({
   loading,
   error,
   query,
+  uploadStatus,
   hasQueuedFiles,
   viewMode,
   onSetViewMode,
+  onSetUploadStatus,
   onSelectTag,
   onPickFiles,
   onDropPaths,
@@ -76,7 +79,7 @@ export function LibraryPage({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, selectedTag]);
+  }, [query, selectedTag, uploadStatus]);
 
   useEffect(() => {
     if (currentPage !== activePage) {
@@ -142,6 +145,20 @@ export function LibraryPage({
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Library</h2>
         <div className="flex items-center gap-2">
+          <label className="text-xs text-slate-500 dark:text-slate-400">
+            Uploads
+            <select
+              className="ml-2 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs outline-none focus:border-accent-400 dark:border-slate-700 dark:bg-slate-900"
+              onChange={(event) =>
+                onSetUploadStatus(event.target.value as LibraryFilters["uploadStatus"])
+              }
+              value={uploadStatus}
+            >
+              <option value="all">All</option>
+              <option value="queued">Queued</option>
+              <option value="error">Failed</option>
+            </select>
+          </label>
           <button
             className="rounded-md border border-rose-300 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
             onClick={onRetryAllFailed}
