@@ -56,7 +56,7 @@ export interface LibraryFilters {
   fileType: string | null;
   dominantColor: string | null;
   sentiment: Sentiment | null;
-  uploadStatus: "all" | "queued" | "error";
+  uploadStatus: "all" | "pending" | "queued" | "processing" | "error";
   uploadedWithin: "all" | "7d" | "30d" | "365d";
   selectedTag: string | null;
 }
@@ -122,8 +122,10 @@ export interface RememberAPI {
   getTagCloud: () => Promise<TagCloudItem[]>;
   addManualTag: (fileId: string, tag: string) => Promise<void>;
   deleteTag: (fileId: string, tag: string) => Promise<void>;
+  removeFile: (fileId: string) => Promise<void>;
   retryAnalysis: (fileId: string) => Promise<void>;
   retryAllFailedAnalysis: () => Promise<number>;
+  cancelAnalysis: (fileId: string) => Promise<void>;
   triggerAnalysis: (fileId: string) => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   setAutoAnalyzeOnUpload: (enabled: boolean) => Promise<void>;

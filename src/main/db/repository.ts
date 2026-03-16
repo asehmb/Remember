@@ -534,6 +534,31 @@ export class RememberRepository {
     return fileRows.map((row) => row.stored_path);
   }
 
+  removeFileById(fileId: string): { storedPath: string; sourcePath: string | null } | null {
+    const row = this.db
+      .prepare(
+        `SELECT id, stored_path, source_path
+         FROM files
+         WHERE id = ?`
+      )
+      .get(fileId) as { id: string; stored_path: string; source_path: string | null } | undefined;
+
+    if (!row) {
+      return null;
+    }
+
+    const transaction = this.db.transaction(() => {
+      this.db.prepare("DELETE FROM search_index WHERE file_id = ?").run(row.id);
+      this.db.prepare("DELETE FROM files WHERE id = ?").run(row.id);
+    });
+    transaction();
+
+    return {
+      storedPath: row.stored_path,
+      sourcePath: row.source_path
+    };
+  }
+
   listTrackedSourceFilesByRoots(roots: string[]): Array<{ id: string; sourcePath: string }> {
     const normalizedRoots = [...new Set(roots.map((root) => path.normalize(root.trim())).filter(Boolean))];
     if (normalizedRoots.length === 0) {

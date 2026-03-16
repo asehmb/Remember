@@ -155,7 +155,9 @@ export function LibraryPage({
               value={uploadStatus}
             >
               <option value="all">All</option>
+              <option value="pending">Pending</option>
               <option value="queued">Queued</option>
+              <option value="processing">In progress</option>
               <option value="error">Failed</option>
             </select>
           </label>
@@ -290,6 +292,30 @@ export function LibraryPage({
           />
         ))}
       </div>
+
+      {totalResults > 0 ? (
+        <div className="flex items-center justify-end gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
+          <button
+            className="rounded border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            disabled={activePage <= 1}
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            type="button"
+          >
+            Prev
+          </button>
+          <span className="min-w-24 text-center text-xs text-slate-500 dark:text-slate-400">
+            Page {activePage} / {totalPages}
+          </span>
+          <button
+            className="rounded border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            disabled={activePage >= totalPages}
+            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+            type="button"
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

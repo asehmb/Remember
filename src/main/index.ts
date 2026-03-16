@@ -484,6 +484,20 @@ function registerIpcHandlers(): void {
     repository.deleteTag(fileId, tag);
   });
 
+  ipcMain.handle(CHANNELS.REMOVE_FILE, async (_event, fileId: string) => {
+    const file = repository.getFile(fileId);
+    if (!file) {
+      throw new Error("File not found");
+    }
+
+    queueService.cancel(fileId);
+    const removed = repository.removeFileById(fileId);
+    if (!removed) {
+      throw new Error("File not found");
+    }
+    await fs.rm(removed.storedPath, { force: true });
+  });
+
   ipcMain.handle(CHANNELS.RETRY_ANALYSIS, (_event, fileId: string) => {
     repository.updateFileStatus(fileId, "queued", null);
     queueService.enqueue(fileId);
@@ -496,6 +510,19 @@ function registerIpcHandlers(): void {
       queueService.enqueue(fileId);
     }
     return failedIds.length;
+  });
+
+  ipcMain.handle(CHANNELS.CANCEL_ANALYSIS, (_event, fileId: string) => {
+    const file = repository.getFile(fileId);
+    if (!file) {
+      throw new Error("File not found");
+    }
+    if (file.status !== "queued" && file.status !== "processing") {
+      return;
+    }
+
+    queueService.cancel(fileId);
+    repository.updateFileStatus(fileId, "pending", null);
   });
 
   ipcMain.handle(CHANNELS.TRIGGER_ANALYSIS, (_event, fileId: string) => {

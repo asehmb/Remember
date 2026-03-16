@@ -282,10 +282,21 @@ export function App(): JSX.Element {
           await window.remember.triggerAnalysis(selectedFile.id);
           await refreshAll();
         }}
+        onCancelAnalysis={async () => {
+          if (!selectedFile) return;
+          await window.remember.cancelAnalysis(selectedFile.id);
+          await refreshAll();
+        }}
         onClose={() => setSelectedFileId(null)}
         onDeleteTag={async (tag) => {
           if (!selectedFile) return;
           await window.remember.deleteTag(selectedFile.id, tag);
+          await refreshAll();
+        }}
+        onRemoveFile={async () => {
+          if (!selectedFile) return;
+          await window.remember.removeFile(selectedFile.id);
+          setSelectedFileId(null);
           await refreshAll();
         }}
         onRetry={async () => {

@@ -12,6 +12,8 @@ interface FileDetailModalProps {
   onDeleteTag: (tag: string) => Promise<void>;
   onRetry: () => Promise<void>;
   onAnalyze: () => Promise<void>;
+  onCancelAnalysis: () => Promise<void>;
+  onRemoveFile: () => Promise<void>;
 }
 
 interface PreviewPage {
@@ -123,7 +125,9 @@ export function FileDetailModal({
   onAddTag,
   onDeleteTag,
   onRetry,
-  onAnalyze
+  onAnalyze,
+  onCancelAnalysis,
+  onRemoveFile
 }: FileDetailModalProps): JSX.Element | null {
   const [tagInput, setTagInput] = useState("");
   const [previewText, setPreviewText] = useState<string | null>(null);
@@ -425,6 +429,32 @@ export function FileDetailModal({
                     Run analysis
                   </button>
                 ) : null}
+
+                {file.status === "queued" || file.status === "processing" ? (
+                  <button
+                    className="rounded-md border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50 dark:border-amber-900 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                    onClick={() => {
+                      if (window.confirm("Cancel upload/analysis for this file?")) {
+                        void onCancelAnalysis();
+                      }
+                    }}
+                    type="button"
+                  >
+                    Cancel upload
+                  </button>
+                ) : null}
+
+                <button
+                  className="rounded-md border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30"
+                  onClick={() => {
+                    if (window.confirm("Remove this file from Remember? This only removes it from the app library.")) {
+                      void onRemoveFile();
+                    }
+                  }}
+                  type="button"
+                >
+                  Remove file
+                </button>
               </div>
 
               {file.errorMessage ? <p className="mt-2 text-xs text-rose-500">{file.errorMessage}</p> : null}
