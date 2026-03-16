@@ -131,7 +131,7 @@ export function LibraryPage({
 
             {hasMoreTags ? (
               <button
-                className="text-xs text-accent-500 underline"
+                className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                 onClick={() => setShowAllTags((current) => !current)}
                 type="button"
               >

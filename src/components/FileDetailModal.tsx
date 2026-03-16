@@ -201,6 +201,10 @@ export function FileDetailModal({
     return null;
   }
 
+  const fileUrl = toFileUrl(file.storedPath);
+  const openFileButtonClass =
+    "inline-flex items-center rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800";
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-6" onClick={onClose}>
       <div
@@ -227,24 +231,24 @@ export function FileDetailModal({
                 alt={file.originalName}
                 className="mx-auto max-h-[420px] rounded-lg object-contain"
                 onError={() => setIsImagePreviewBroken(true)}
-                src={toFileUrl(file.storedPath)}
+                src={fileUrl}
               />
             ) : isImage ? (
               <div className="flex h-[240px] flex-col items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                 <span>Image preview unavailable.</span>
-                <a className="text-accent-500 underline" href={toFileUrl(file.storedPath)} rel="noreferrer" target="_blank">
+                <a className={openFileButtonClass} href={fileUrl} rel="noreferrer" target="_blank">
                   Open file
                 </a>
               </div>
             ) : isPdf ? (
               <object
                 className="h-[420px] w-full rounded-lg border border-slate-200 dark:border-slate-800"
-                data={toFileUrl(file.storedPath)}
+                data={fileUrl}
                 type="application/pdf"
               >
                 <div className="flex h-full items-center justify-center text-sm text-slate-500 dark:text-slate-400">
                   Unable to preview this PDF inline.
-                  <a className="ml-1 text-accent-500 underline" href={toFileUrl(file.storedPath)} rel="noreferrer" target="_blank">
+                  <a className={`ml-2 ${openFileButtonClass}`} href={fileUrl} rel="noreferrer" target="_blank">
                     Open file
                   </a>
                 </div>
@@ -253,7 +257,7 @@ export function FileDetailModal({
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                   <span>{isPptx ? "Presentation preview" : "Document preview"}</span>
-                  <a className="text-accent-500 underline" href={toFileUrl(file.storedPath)} rel="noreferrer" target="_blank">
+                  <a className={openFileButtonClass} href={fileUrl} rel="noreferrer" target="_blank">
                     Open file
                   </a>
                 </div>
@@ -287,7 +291,7 @@ export function FileDetailModal({
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                   <span>Document text preview</span>
-                  <a className="text-accent-500 underline" href={toFileUrl(file.storedPath)} rel="noreferrer" target="_blank">
+                  <a className={openFileButtonClass} href={fileUrl} rel="noreferrer" target="_blank">
                     Open file
                   </a>
                 </div>
@@ -305,7 +309,10 @@ export function FileDetailModal({
               </div>
             ) : (
               <div className="flex h-[240px] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
-                Preview is limited for this format. <a className="ml-1 text-accent-500 underline" href={toFileUrl(file.storedPath)} rel="noreferrer" target="_blank">Open file</a>
+                <span>Preview is limited for this format.</span>
+                <a className={`ml-2 ${openFileButtonClass}`} href={fileUrl} rel="noreferrer" target="_blank">
+                  Open file
+                </a>
               </div>
             )}
           </div>
