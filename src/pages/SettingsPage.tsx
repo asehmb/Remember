@@ -9,6 +9,7 @@ interface SettingsPageProps {
   onSetAiRequestDelay: (delayMs: number) => Promise<void>;
   onToggleRestApi: (enabled: boolean) => Promise<void>;
   onSetWatchFolderPaths: (watchFolderPaths: string[]) => Promise<void>;
+  onSetWatchFolderExcludePaths: (watchFolderExcludePaths: string[]) => Promise<void>;
   onBrowseWatchFolderPath: () => Promise<string | null>;
   onSaveAiProfile: (profile: {
     profileId: string | null;
@@ -39,6 +40,7 @@ export function SettingsPage({
   onSetAiRequestDelay,
   onToggleRestApi,
   onSetWatchFolderPaths,
+  onSetWatchFolderExcludePaths,
   onBrowseWatchFolderPath,
   onSaveAiProfile,
   onApplyAiProfile,
@@ -49,6 +51,7 @@ export function SettingsPage({
 }: SettingsPageProps): JSX.Element {
   const [apiKey, setApiKey] = useState("");
   const [watchFolderPathInput, setWatchFolderPathInput] = useState("");
+  const [watchFolderExcludePathInput, setWatchFolderExcludePathInput] = useState("");
   const [profileNameInput, setProfileNameInput] = useState("");
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
   const [providerInput, setProviderInput] = useState<AiProviderId>("openai");
@@ -408,7 +411,8 @@ export function SettingsPage({
             <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
               Add one or more absolute folder paths to keep them synced automatically. Newly added
               supported files are ingested, and if synced source files are deleted from those folders,
-              they are removed from your library.
+              they are removed from your library. You can exclude nested paths to skip specific
+              subdirectories.
             </div>
           ) : null}
 
@@ -483,6 +487,88 @@ export function SettingsPage({
                         const nextPaths = settings.watchFolderPaths.filter((path) => path !== folderPath);
                         void onSetWatchFolderPaths(nextPaths);
                         setStatusMessage("Watch folder removed.");
+                      }}
+                      type="button"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-slate-500 dark:text-slate-400">Exclude subfolders</label>
+            <div className="mt-1 flex gap-2">
+              <input
+                className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400 dark:border-slate-700 dark:bg-slate-950"
+                onChange={(event) => setWatchFolderExcludePathInput(event.target.value)}
+                placeholder="/absolute/path/to/exclude"
+                type="text"
+                value={watchFolderExcludePathInput}
+              />
+              <button
+                className="rounded-md bg-accent-500 px-4 py-2 text-sm text-white hover:bg-accent-600"
+                onClick={() => {
+                  const trimmed = watchFolderExcludePathInput.trim();
+                  if (!trimmed) {
+                    return;
+                  }
+                  const nextPaths = [...new Set([...settings.watchFolderExcludePaths, trimmed])];
+                  void onSetWatchFolderExcludePaths(nextPaths);
+                  setWatchFolderExcludePathInput("");
+                  setStatusMessage("Exclude folder added.");
+                }}
+                type="button"
+              >
+                Add
+              </button>
+              <button
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                onClick={() => {
+                  void onBrowseWatchFolderPath().then((pickedPath) => {
+                    if (!pickedPath) {
+                      return;
+                    }
+                    const nextPaths = [...new Set([...settings.watchFolderExcludePaths, pickedPath])];
+                    void onSetWatchFolderExcludePaths(nextPaths);
+                    setWatchFolderExcludePathInput("");
+                    setStatusMessage("Exclude folder added.");
+                  });
+                }}
+                type="button"
+              >
+                Browse
+              </button>
+              <button
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                onClick={() => {
+                  setWatchFolderExcludePathInput("");
+                  void onSetWatchFolderExcludePaths([]);
+                  setStatusMessage("All exclude folders cleared.");
+                }}
+                type="button"
+              >
+                Clear all
+              </button>
+            </div>
+            <div className="mt-2 space-y-2">
+              {settings.watchFolderExcludePaths.length === 0 ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400">Current: none</p>
+              ) : (
+                settings.watchFolderExcludePaths.map((folderPath) => (
+                  <div
+                    key={folderPath}
+                    className="flex items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs dark:border-slate-800 dark:bg-slate-950"
+                  >
+                    <span className="truncate">{folderPath}</span>
+                    <button
+                      className="rounded border border-slate-300 px-2 py-0.5 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                      onClick={() => {
+                        const nextPaths = settings.watchFolderExcludePaths.filter((path) => path !== folderPath);
+                        void onSetWatchFolderExcludePaths(nextPaths);
+                        setStatusMessage("Exclude folder removed.");
                       }}
                       type="button"
                     >

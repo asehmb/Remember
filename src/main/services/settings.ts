@@ -11,6 +11,7 @@ interface PreferenceSchema {
   restApiEnabled: boolean;
   restApiPort: number;
   watchFolderPaths: string[];
+  watchFolderExcludePaths: string[];
   lastHeartbeatAt: string | null;
   lastHeartbeatSummary: string | null;
   heartbeatSeenFileMarkers: string[];
@@ -53,6 +54,7 @@ const DEFAULT_PREFERENCES: PreferenceSchema = {
   restApiEnabled: true,
   restApiPort: 47821,
   watchFolderPaths: [],
+  watchFolderExcludePaths: [],
   lastHeartbeatAt: null,
   lastHeartbeatSummary: null,
   heartbeatSeenFileMarkers: [],
@@ -81,6 +83,7 @@ export class SettingsService {
       restApiEnabled: preferences.restApiEnabled,
       restApiPort: preferences.restApiPort,
       watchFolderPaths: [...preferences.watchFolderPaths],
+      watchFolderExcludePaths: [...preferences.watchFolderExcludePaths],
       lastHeartbeatAt: preferences.lastHeartbeatAt,
       lastHeartbeatSummary: preferences.lastHeartbeatSummary,
       aiProvider: preferences.aiProvider,
@@ -268,6 +271,18 @@ export class SettingsService {
     return [...this.readPreferences().watchFolderPaths];
   }
 
+  setWatchFolderExcludePaths(watchFolderExcludePaths: string[]): void {
+    const nextPreferences = {
+      ...this.readPreferences(),
+      watchFolderExcludePaths: this.validateWatchFolderExcludePaths(watchFolderExcludePaths)
+    };
+    this.writePreferences(nextPreferences);
+  }
+
+  getWatchFolderExcludePaths(): string[] {
+    return [...this.readPreferences().watchFolderExcludePaths];
+  }
+
   setHeartbeatMetadata(lastHeartbeatAt: string | null, lastHeartbeatSummary: string | null): void {
     const validatedTimestamp = this.validateHeartbeatTimestamp(lastHeartbeatAt);
     const validatedSummary = this.validateHeartbeatSummary(lastHeartbeatSummary);
@@ -385,6 +400,10 @@ export class SettingsService {
             ? DEFAULT_PREFERENCES.watchFolderPaths
             : this.validateWatchFolderPaths([parsed.watchFolderPath])
           : this.validateWatchFolderPaths(parsed.watchFolderPaths);
+      const watchFolderExcludePaths =
+        parsed.watchFolderExcludePaths === undefined
+          ? DEFAULT_PREFERENCES.watchFolderExcludePaths
+          : this.validateWatchFolderExcludePaths(parsed.watchFolderExcludePaths);
       const lastHeartbeatAt =
         parsed.lastHeartbeatAt === undefined
           ? DEFAULT_PREFERENCES.lastHeartbeatAt
@@ -436,6 +455,7 @@ export class SettingsService {
         restApiEnabled,
         restApiPort,
         watchFolderPaths,
+        watchFolderExcludePaths,
         lastHeartbeatAt,
         lastHeartbeatSummary,
         heartbeatSeenFileMarkers,
@@ -542,6 +562,34 @@ export class SettingsService {
     const deduped = new Set<string>();
     for (const folderPath of value) {
       deduped.add(this.validateSingleWatchFolderPath(folderPath));
+    }
+
+    return [...deduped];
+  }
+
+  private validateSingleWatchFolderExcludePath(value: unknown): string {
+    if (typeof value !== "string") {
+      throw new Error("watchFolderExcludePaths must be an array of non-empty absolute path strings");
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      throw new Error("watchFolderExcludePaths must be an array of non-empty absolute path strings");
+    }
+    if (!path.isAbsolute(trimmed)) {
+      throw new Error("watchFolderExcludePaths must contain only absolute paths");
+    }
+    return path.normalize(trimmed);
+  }
+
+  private validateWatchFolderExcludePaths(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+      throw new Error("watchFolderExcludePaths must be an array of non-empty absolute path strings");
+    }
+
+    const deduped = new Set<string>();
+    for (const folderPath of value) {
+      deduped.add(this.validateSingleWatchFolderExcludePath(folderPath));
     }
 
     return [...deduped];

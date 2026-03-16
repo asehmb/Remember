@@ -533,6 +533,19 @@ function registerIpcHandlers(): void {
     },
   );
 
+  ipcMain.handle(
+    CHANNELS.SET_WATCH_FOLDER_EXCLUDE_PATHS,
+    (_event, watchFolderExcludePaths: string[]) => {
+      settingsService.setWatchFolderExcludePaths(watchFolderExcludePaths);
+      folderSyncWatcherService.refresh();
+
+      if (settingsService.getWatchFolderPaths().length === 0) {
+        return;
+      }
+      void heartbeatService.runNow();
+    },
+  );
+
   ipcMain.handle(CHANNELS.SET_AI_PROVIDER, (_event, provider: AiProviderId) => {
     settingsService.setAiProvider(provider);
   });

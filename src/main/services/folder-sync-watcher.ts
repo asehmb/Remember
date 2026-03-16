@@ -1,7 +1,21 @@
 import fs from "node:fs";
+import path from "node:path";
 import { SettingsService } from "./settings";
 
 const SYNC_DEBOUNCE_MS = 1200;
+
+function isPathWithinRoot(filePath: string, rootPath: string): boolean {
+  const normalizedFilePath = path.normalize(filePath);
+  const normalizedRootPath = path.normalize(rootPath);
+  return (
+    normalizedFilePath === normalizedRootPath ||
+    normalizedFilePath.startsWith(`${normalizedRootPath}${path.sep}`)
+  );
+}
+
+function isPathExcluded(filePath: string, excludedRootPaths: string[]): boolean {
+  return excludedRootPaths.some((excludedRootPath) => isPathWithinRoot(filePath, excludedRootPath));
+}
 
 export class FolderSyncWatcherService {
   private watchers: fs.FSWatcher[] = [];
@@ -20,11 +34,29 @@ export class FolderSyncWatcherService {
     this.stopWatchers();
 
     const watchFolderPaths = this.settingsService.getWatchFolderPaths();
+    const watchFolderExcludePaths = this.settingsService.getWatchFolderExcludePaths();
     for (const watchFolderPath of watchFolderPaths) {
+      const excludedPathsForRoot = watchFolderExcludePaths.filter((excludedPath) =>
+        isPathWithinRoot(excludedPath, watchFolderPath)
+      );
       try {
-        const watcher = fs.watch(watchFolderPath, { recursive: true }, () => {
-          this.scheduleSync();
-        });
+        const watcher = fs.watch(
+          watchFolderPath,
+          { recursive: true },
+          (_eventType, relativePath) => {
+            if (relativePath) {
+              const relativeValue = relativePath.toString();
+              if (relativeValue) {
+                const changedPath = path.join(watchFolderPath, relativeValue);
+                if (isPathExcluded(changedPath, excludedPathsForRoot)) {
+                  return;
+                }
+              }
+            }
+
+            this.scheduleSync();
+          }
+        );
 
         watcher.on("error", (error) => {
           const message = error instanceof Error ? error.message : String(error);

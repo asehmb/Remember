@@ -243,6 +243,10 @@ export function App(): JSX.Element {
                 await window.remember.setWatchFolderPaths(watchFolderPaths);
                 await refreshSettings();
               }}
+              onSetWatchFolderExcludePaths={async (watchFolderExcludePaths) => {
+                await window.remember.setWatchFolderExcludePaths(watchFolderExcludePaths);
+                await refreshSettings();
+              }}
               onBrowseWatchFolderPath={async () => {
                 return window.remember.pickFolderPath();
               }}

@@ -68,6 +68,10 @@ function isPathWithinRoot(filePath: string, rootPath: string): boolean {
   );
 }
 
+function isPathExcluded(filePath: string, excludedRootPaths: string[]): boolean {
+  return excludedRootPaths.some((excludedRootPath) => isPathWithinRoot(filePath, excludedRootPath));
+}
+
 function sanitizeSummaryToken(value: string): string {
   return value.replace(/[,\n\r;|]+/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -204,6 +208,7 @@ export class HeartbeatService {
     let persistedMarkers = this.settingsService.getHeartbeatSeenFileMarkers();
     try {
       const watchFolderPaths = this.settingsService.getWatchFolderPaths();
+      const watchFolderExcludePaths = this.settingsService.getWatchFolderExcludePaths();
       summary.watchFolderPaths = [...watchFolderPaths];
 
       if (watchFolderPaths.length === 0) {
@@ -231,7 +236,14 @@ export class HeartbeatService {
           continue;
         }
 
-        const scannedFilesForRoot = await this.scanSupportedFiles(watchFolderPath, scanErrors);
+        const excludedPathsForRoot = watchFolderExcludePaths.filter((excludedPath) =>
+          isPathWithinRoot(excludedPath, watchFolderPath)
+        );
+        const scannedFilesForRoot = await this.scanSupportedFiles(
+          watchFolderPath,
+          excludedPathsForRoot,
+          scanErrors
+        );
         scannedRootPaths.push(watchFolderPath);
         for (const scannedFile of scannedFilesForRoot) {
           scannedByPath.set(scannedFile.path, scannedFile);
@@ -344,13 +356,20 @@ export class HeartbeatService {
     }
   }
 
-  private async scanSupportedFiles(rootPath: string, errors: string[]): Promise<ScannedFile[]> {
+  private async scanSupportedFiles(
+    rootPath: string,
+    excludedPaths: string[],
+    errors: string[]
+  ): Promise<ScannedFile[]> {
     const files: ScannedFile[] = [];
     const pendingDirectories = [rootPath];
 
     while (pendingDirectories.length > 0) {
       const currentDirectory = pendingDirectories.pop();
       if (!currentDirectory) {
+        continue;
+      }
+      if (isPathExcluded(currentDirectory, excludedPaths)) {
         continue;
       }
 
@@ -365,11 +384,17 @@ export class HeartbeatService {
       for (const entry of entries) {
         const entryPath = path.join(currentDirectory, entry.name);
         if (entry.isDirectory()) {
+          if (isPathExcluded(entryPath, excludedPaths)) {
+            continue;
+          }
           pendingDirectories.push(entryPath);
           continue;
         }
 
         if (!entry.isFile()) {
+          continue;
+        }
+        if (isPathExcluded(entryPath, excludedPaths)) {
           continue;
         }
 

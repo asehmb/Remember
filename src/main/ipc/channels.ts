@@ -17,6 +17,7 @@ export const CHANNELS = {
   SET_AI_REQUEST_DELAY: "settings:setAiRequestDelay",
   SET_REST_API_ENABLED: "settings:setRestApiEnabled",
   SET_WATCH_FOLDER_PATHS: "settings:setWatchFolderPaths",
+  SET_WATCH_FOLDER_EXCLUDE_PATHS: "settings:setWatchFolderExcludePaths",
   SET_AI_PROVIDER: "settings:setAiProvider",
   SET_AI_BASE_URL: "settings:setAiBaseUrl",
   SET_AI_MODELS: "settings:setAiModels",

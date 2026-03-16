@@ -22,6 +22,8 @@ const api: RememberAPI = {
   setRestApiEnabled: (enabled) => ipcRenderer.invoke(CHANNELS.SET_REST_API_ENABLED, enabled),
   setWatchFolderPaths: (watchFolderPaths) =>
     ipcRenderer.invoke(CHANNELS.SET_WATCH_FOLDER_PATHS, watchFolderPaths),
+  setWatchFolderExcludePaths: (watchFolderExcludePaths) =>
+    ipcRenderer.invoke(CHANNELS.SET_WATCH_FOLDER_EXCLUDE_PATHS, watchFolderExcludePaths),
   setAiProvider: (provider) => ipcRenderer.invoke(CHANNELS.SET_AI_PROVIDER, provider),
   setAiBaseUrl: (baseUrl) => ipcRenderer.invoke(CHANNELS.SET_AI_BASE_URL, baseUrl),
   setAiModels: (models) => ipcRenderer.invoke(CHANNELS.SET_AI_MODELS, models),

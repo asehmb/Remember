@@ -84,6 +84,7 @@ export interface AppSettings {
   restApiEnabled: boolean;
   restApiPort: number;
   watchFolderPaths: string[];
+  watchFolderExcludePaths: string[];
   lastHeartbeatAt: string | null;
   lastHeartbeatSummary: string | null;
   aiProvider: AiProviderId;
@@ -128,6 +129,7 @@ export interface RememberAPI {
   setAiRequestDelayMs: (delayMs: number) => Promise<void>;
   setRestApiEnabled: (enabled: boolean) => Promise<void>;
   setWatchFolderPaths: (watchFolderPaths: string[]) => Promise<void>;
+  setWatchFolderExcludePaths: (watchFolderExcludePaths: string[]) => Promise<void>;
   setAiProvider: (provider: AiProviderId) => Promise<void>;
   setAiBaseUrl: (baseUrl: string | null) => Promise<void>;
   setAiModels: (models: { chatModel: string; visionModel: string }) => Promise<void>;
