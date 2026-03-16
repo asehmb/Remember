@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FileRow } from "../shared/types";
 import { formatDate, formatFileSize } from "../lib/utils/format";
 import { toFileUrl } from "../lib/utils/file-url";
@@ -12,6 +12,109 @@ interface FileDetailModalProps {
   onDeleteTag: (tag: string) => Promise<void>;
   onRetry: () => Promise<void>;
   onAnalyze: () => Promise<void>;
+}
+
+interface PreviewPage {
+  title: string;
+  content: string;
+}
+
+function splitLongText(value: string, maxLength: number): string[] {
+  if (value.length <= maxLength) {
+    return [value];
+  }
+
+  const words = value.split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return [value];
+  }
+
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  for (const word of words) {
+    const nextChunk = currentChunk ? `${currentChunk} ${word}` : word;
+    if (nextChunk.length > maxLength && currentChunk) {
+      chunks.push(currentChunk);
+      currentChunk = word;
+      continue;
+    }
+
+    currentChunk = nextChunk;
+  }
+
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
+
+  return chunks;
+}
+
+function buildDocxPreviewPages(rawText: string): PreviewPage[] {
+  const normalized = rawText.replace(/\r\n/g, "\n").trim();
+  if (!normalized) {
+    return [];
+  }
+
+  const paragraphBlocks = normalized
+    .split(/\n{2,}/)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  const sourceBlocks = paragraphBlocks.length > 0 ? paragraphBlocks : [normalized];
+  const pages: string[] = [];
+  let currentPage = "";
+
+  for (const block of sourceBlocks) {
+    const blockChunks = splitLongText(block, 1200);
+
+    for (const chunk of blockChunks) {
+      const nextPage = currentPage ? `${currentPage}\n\n${chunk}` : chunk;
+      if (nextPage.length > 1800 && currentPage) {
+        pages.push(currentPage);
+        currentPage = chunk;
+        continue;
+      }
+      currentPage = nextPage;
+    }
+  }
+
+  if (currentPage) {
+    pages.push(currentPage);
+  }
+
+  return pages.map((content, index) => ({
+    title: `Page ${index + 1}`,
+    content,
+  }));
+}
+
+function buildPptxPreviewPages(rawText: string): PreviewPage[] {
+  const normalized = rawText.replace(/\r\n/g, "\n").trim();
+  if (!normalized) {
+    return [];
+  }
+
+  const slideBlocks = normalized
+    .split(/\n{2,}/)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  return slideBlocks.map((segment, index) => {
+    const lines = segment.split("\n");
+    const firstLine = lines[0]?.trim() ?? "";
+    const hasSlideTitle = /^slide\s+\d+/i.test(firstLine);
+
+    const title = hasSlideTitle ? firstLine : `Slide ${index + 1}`;
+    const content = hasSlideTitle
+      ? lines.slice(1).join("\n").trim()
+      : segment;
+
+    return {
+      title,
+      content: content || "No text found on this slide.",
+    };
+  });
 }
 
 export function FileDetailModal({
@@ -30,7 +133,21 @@ export function FileDetailModal({
   const extension = file?.extension.toLowerCase() ?? "";
   const isImage = [".png", ".jpg", ".jpeg", ".webp"].includes(extension);
   const isPdf = extension === ".pdf";
+  const isDocx = extension === ".docx";
+  const isPptx = extension === ".pptx";
+  const usesPagedDocumentPreview = isDocx || isPptx;
   const supportsTextPreview = [".txt", ".docx", ".pptx"].includes(extension);
+  const pagedPreviewPages = useMemo(() => {
+    if (!usesPagedDocumentPreview || !previewText || !previewText.trim()) {
+      return [];
+    }
+
+    if (isPptx) {
+      return buildPptxPreviewPages(previewText);
+    }
+
+    return buildDocxPreviewPages(previewText);
+  }, [isPptx, previewText, usesPagedDocumentPreview]);
 
   useEffect(() => {
     setIsImagePreviewBroken(false);
@@ -128,6 +245,40 @@ export function FileDetailModal({
                   </a>
                 </div>
               </object>
+            ) : usesPagedDocumentPreview ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <span>{isPptx ? "Presentation preview" : "Document preview"}</span>
+                  <a className="text-accent-500 underline" href={toFileUrl(file.storedPath)} rel="noreferrer" target="_blank">
+                    Open file
+                  </a>
+                </div>
+                <div className="h-[420px] overflow-y-auto rounded-lg border border-slate-200 bg-slate-200/60 p-4 dark:border-slate-800 dark:bg-slate-950">
+                  {previewLoading ? (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Loading preview...</p>
+                  ) : previewError ? (
+                    <p className="text-sm text-rose-500">{previewError}</p>
+                  ) : pagedPreviewPages.length > 0 ? (
+                    <div className="space-y-4">
+                      {pagedPreviewPages.map((page, index) => (
+                        <article
+                          key={`${page.title}-${index}`}
+                          className="mx-auto w-full max-w-[560px] rounded-sm border border-slate-200 bg-white px-6 py-5 text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        >
+                          <p className="mb-3 border-b border-slate-200 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                            {page.title}
+                          </p>
+                          <pre className="whitespace-pre-wrap break-words font-sans leading-relaxed">
+                            {page.content}
+                          </pre>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No readable preview text available.</p>
+                  )}
+                </div>
+              </div>
             ) : supportsTextPreview ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
